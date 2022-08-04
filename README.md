@@ -6,3 +6,6 @@ This repository stores submodule used in [HMSE-frontend](https://github.com/Wate
 * `k8s`
 
 Each of these are used in the related branch on the frontend.
+
+### Main branch
+The main branch is used as an interface for all the deployments and stores common code used by other branches.
