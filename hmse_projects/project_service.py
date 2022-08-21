@@ -12,7 +12,7 @@ def get(project_id: ProjectID) -> ProjectMetadata:
     return project_dao.read_metadata(project_id)
 
 
-def get_all_project_names() -> List[ProjectMetadata]:
+def get_all_project_names() -> List[ProjectID]:
     return project_dao.read_all_names()
 
 
