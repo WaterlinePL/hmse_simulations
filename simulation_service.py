@@ -1,44 +1,48 @@
-from dataclasses import dataclass, field
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from threading import Thread
-from typing import List, Dict
 
-import numpy as np
-
-from hmse_simulations.simulation.simulation import Simulation, SimulationID
+from hmse_simulations.hmse_projects.project_metadata import ProjectMetadata
+from hmse_simulations.hmse_projects.typing_help import ProjectID
+from hmse_simulations.simulation.simulation import Simulation
 from hmse_simulations.simulation.simulation_enums import SimulationStage
 from hmse_simulations.simulation.simulation_status import SimulationStatus
 
 
 @dataclass
-class SimulationService:
-    ids_to_simulations: Dict[SimulationID, Simulation] = field(default_factory=dict)
+class SimulationService(ABC):
 
-    def new_simulation(self,
-                       project_id: str,
-                       spin_up: int,
-                       models_to_shapes: List[str, np.ndarray],
-                       stages: List[SimulationStage]) -> SimulationID:
-        sim = Simulation(project_id=project_id,
-                         spin_up=spin_up,
-                         models_to_shapes=models_to_shapes,
-                         simulation_status=SimulationStatus(stages))
+    def run_simulation(self, project_metadata: ProjectMetadata) -> None:
+        stages = Simulation.basic_stages()
 
-        self.ids_to_simulations[sim.simulation_id] = sim
+        if project_metadata.shapes_to_hydrus:
+            stages.insert(1, SimulationStage.DATA_PASSING)
+            stages.insert(1, SimulationStage.HYDRUS_SIMULATION)
+
+            if project_metadata.hydrus_to_weather:
+                stages.insert(1, SimulationStage.WEATHER_DATA_TRANSFER)
+
+        simulation = Simulation(project_metadata=project_metadata,
+                                simulation_status=SimulationStatus(stages))
+
+        self.__register_simulation_if_necessary(simulation)
 
         # Run simulation in background
-        thread = Thread(target=sim.run_simulation)
+        thread = Thread(target=simulation.run_simulation)
         thread.start()
 
-        return sim.simulation_id
-
-    def get_simulation_stages(self, simulation_id: str):
-        return self.ids_to_simulations[simulation_id].get_stages()
-
-    def check_simulation_status(self, simulation_id: SimulationID) -> SimulationStatus:
+    @abstractmethod
+    def check_simulation_status(self, project_id: ProjectID) -> SimulationStatus:
         """
         Return status of each step in particular simulation.
-        @param simulation_id: Id of the simulation to check
+        @param project_id: ID of the simulated project to check
         @return: Status of hydrus stage, passing stage and modflow stage (in this exact order)
         """
+        ...
 
-        return self.ids_to_simulations[simulation_id].get_simulation_status()
+    @abstractmethod
+    def __register_simulation_if_necessary(self, simulation: Simulation):
+        ...
+
+
+simulation_service = SimulationService()

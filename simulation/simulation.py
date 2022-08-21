@@ -1,27 +1,20 @@
-import uuid
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Callable, Tuple, Optional
 
-import numpy as np
-
+from hmse_simulations.hmse_projects.project_metadata import ProjectMetadata
 from hmse_simulations.simulation.simulation_enums import SimulationStageStatus, SimulationStage
 from hmse_simulations.simulation.simulation_error import SimulationError
 from hmse_simulations.simulation.simulation_status import SimulationStatus
 
 MODFLOW_OUTPUT_JSON = "results.json"
 
-SimulationID = str  # UUID as string
-
 
 @dataclass
 class Simulation(ABC):
-    project_id: str
-    spin_up: int
-    models_to_shapes: List[str, np.ndarray]
+    project_metadata: ProjectMetadata
     simulation_status: SimulationStatus
     simulation_error: Optional[SimulationError] = None
-    simulation_id: SimulationID = field(default_factory=lambda: str(uuid.uuid4()))
 
     def get_simulation_status(self):
         return self.simulation_status
@@ -44,9 +37,14 @@ class Simulation(ABC):
         return self.simulation_status.get_stages()
 
     @staticmethod
-    def basic_stages() -> List[SimulationStage]:
+    def __all_stages() -> List[SimulationStage]:
+        """
+        This method is used to show the whole flow of simulation, not used in the code.
+        @return: All possible stages in simulation
+        """
         return [
             SimulationStage.INITIALIZATION,
+            SimulationStage.WEATHER_DATA_TRANSFER,
             SimulationStage.HYDRUS_SIMULATION,
             SimulationStage.DATA_PASSING,
             SimulationStage.MODFLOW_SIMULATION,
@@ -55,10 +53,13 @@ class Simulation(ABC):
         ]
 
     @staticmethod
-    def stages_with_weather_data_transfer() -> List[SimulationStage]:
-        stages = Simulation.basic_stages()
-        stages.insert(1, SimulationStage.WEATHER_DATA_TRANSFER)
-        return stages
+    def basic_stages() -> List[SimulationStage]:
+        return [
+            SimulationStage.INITIALIZATION,
+            SimulationStage.MODFLOW_SIMULATION,
+            SimulationStage.OUTPUT_EXTRACTION_TO_JSON,
+            SimulationStage.CLEANUP
+        ]
 
     def __get_stage_methods_to_monitor(self) -> List[Tuple[SimulationStage, Callable]]:
         return [(stage, getattr(self, f"__launch_and_monitor_{stage.lower()}"))

@@ -17,3 +17,6 @@ class SimulationStatus:
 
     def get_stage_status(self, stage: SimulationStage):
         return self.stages_statuses[stage]
+
+    def to_json(self):
+        return self.__dict__
