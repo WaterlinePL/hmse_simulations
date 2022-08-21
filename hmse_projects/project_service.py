@@ -17,7 +17,7 @@ def get_all_project_names() -> List[ProjectID]:
 
 
 def save_or_update(metadata: ProjectMetadata) -> None:
-    project_dao.save_or_update(metadata)
+    project_dao.save_or_update_metadata(metadata)
 
 
 def delete(project_id: ProjectID) -> None:

@@ -75,13 +75,13 @@ class ProjectDao(ABC):
 class ProjectMock(ProjectDao):
 
     def read_metadata(self, project_id: ProjectID) -> ProjectMetadata:
-        pass
+        return ProjectMetadata(project_id)
 
     def read_all_metadata(self) -> List[ProjectMetadata]:
-        pass
+        return [ProjectMetadata("sample-project")]
 
-    def read_all_names(self) -> List[str]:
-        return []
+    def read_all_names(self) -> List[ProjectID]:
+        return ["sample-project"]
 
     def save_or_update_metadata(self, metadata: ProjectMetadata) -> None:
         pass
