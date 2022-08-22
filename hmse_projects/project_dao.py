@@ -75,7 +75,18 @@ class ProjectDao(ABC):
 class ProjectMock(ProjectDao):
 
     def read_metadata(self, project_id: ProjectID) -> ProjectMetadata:
-        return ProjectMetadata(project_id)
+        return ProjectMetadata(project_id,
+                               finished=False,
+                               lat=10.10,
+                               long=34.34,
+                               start_date='01-01-2020',
+                               end_date='01-01-2022',
+                               spin_up=365,
+                               rows=10,
+                               cols=10,
+                               grid_unit='meter',
+                               row_cells=[50]*10,
+                               col_cells=[20]*10)
 
     def read_all_metadata(self) -> List[ProjectMetadata]:
         return [ProjectMetadata("sample-project")]
