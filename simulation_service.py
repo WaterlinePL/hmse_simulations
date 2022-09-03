@@ -41,8 +41,17 @@ class SimulationService(ABC):
         ...
 
     @abstractmethod
-    def __register_simulation_if_necessary(self, simulation: Simulation):
+    def register_simulation_if_necessary(self, simulation: Simulation):
         ...
 
 
-simulation_service = SimulationService()
+class SimulationMockService(SimulationService):
+
+    def check_simulation_status(self, project_id: ProjectID) -> SimulationStatus:
+        pass
+
+    def register_simulation_if_necessary(self, simulation: Simulation):
+        pass
+
+
+simulation_service = SimulationMockService()
