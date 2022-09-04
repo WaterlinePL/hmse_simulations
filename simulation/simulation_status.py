@@ -19,4 +19,5 @@ class SimulationStatus:
         return self.stages_statuses[stage]
 
     def to_json(self):
-        return self.__dict__
+        stage_dict = {step.to_id_and_name()[0]: self.stages_statuses[step] for step in self.stages_statuses.keys()}
+        return stage_dict

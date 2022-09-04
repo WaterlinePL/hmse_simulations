@@ -37,9 +37,9 @@ class Simulation(ABC):
         return self.simulation_status.get_stages()
 
     @staticmethod
-    def __all_stages() -> List[SimulationStage]:
+    def all_stages() -> List[SimulationStage]:
         """
-        This method is used to show the whole flow of simulation, not used in the code.
+        This method is used to show the whole flow of simulation.
         @return: All possible stages in simulation
         """
         return [

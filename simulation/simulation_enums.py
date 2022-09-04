@@ -1,4 +1,5 @@
 from enum import auto
+from typing import Tuple
 
 from strenum import StrEnum
 
@@ -18,3 +19,18 @@ class SimulationStage(StrEnum):
     MODFLOW_SIMULATION = auto()
     OUTPUT_EXTRACTION_TO_JSON = auto()
     CLEANUP = auto()
+
+    def __get_name(self) -> str:
+        return {
+            SimulationStage.INITIALIZATION: "Simulation initialization",
+            SimulationStage.WEATHER_DATA_TRANSFER: "Applying weather data to Hydrus models",
+            SimulationStage.HYDRUS_SIMULATION: "Hydrus simulations",
+            SimulationStage.DATA_PASSING: "Passing data from Hydrus to Modflow",
+            SimulationStage.MODFLOW_SIMULATION: "Modflow simulation",
+            SimulationStage.OUTPUT_EXTRACTION_TO_JSON: "Exporting output to JSON",
+            SimulationStage.CLEANUP: "Cleaning up after simulation",
+        }[self]
+
+    def to_id_and_name(self) -> Tuple[str, str]:
+        my_id = self.lower().replace('_', ' ').title().replace(' ', '')
+        return my_id, self.__get_name()
