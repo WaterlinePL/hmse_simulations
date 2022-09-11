@@ -5,7 +5,7 @@ from threading import Thread
 from hmse_simulations.hmse_projects.project_metadata import ProjectMetadata
 from hmse_simulations.hmse_projects.typing_help import ProjectID
 from hmse_simulations.simulation.simulation import Simulation
-from hmse_simulations.simulation.simulation_enums import SimulationStage, SimulationStageStatus
+from hmse_simulations.simulation.simulation_enums import SimulationStage
 from hmse_simulations.simulation.simulation_status import SimulationStatus
 
 
@@ -45,19 +45,4 @@ class SimulationService(ABC):
         ...
 
 
-class SimulationMockService(SimulationService):
-
-    def run_simulation(self, project_metadata: ProjectMetadata):
-        pass
-
-    def check_simulation_status(self, project_id: ProjectID) -> SimulationStatus:
-        status = SimulationStatus(Simulation.all_stages())
-        status.set_stage_status(SimulationStage.INITIALIZATION, SimulationStageStatus.SUCCESS)
-        status.set_stage_status(SimulationStage.WEATHER_DATA_TRANSFER, SimulationStageStatus.RUNNING)
-        return status
-
-    def register_simulation_if_necessary(self, simulation: Simulation):
-        pass
-
-
-simulation_service = SimulationMockService()
+simulation_service = SimulationService()
