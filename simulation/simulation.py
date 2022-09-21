@@ -11,8 +11,6 @@ import flopy
 import numpy as np
 import phydrus as ph
 
-from config.app_config import app_config
-from hmse_simulations import path_formatter
 from hmse_simulations.hmse_projects.hmse_hydrological_models.hydrus import hydrus_utils
 from hmse_simulations.hmse_projects.hmse_hydrological_models.modflow import modflow_utils
 from hmse_simulations.hmse_projects.hmse_hydrological_models.weather_data import weather_util
