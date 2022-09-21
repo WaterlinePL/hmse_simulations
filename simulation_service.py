@@ -25,7 +25,7 @@ class SimulationService(ABC):
         simulation = Simulation(project_metadata=project_metadata,
                                 simulation_status=SimulationStatus(stages))
 
-        self.__register_simulation_if_necessary(simulation)
+        self.register_simulation_if_necessary(simulation)
 
         # Run simulation in background
         thread = Thread(target=simulation.run_simulation)

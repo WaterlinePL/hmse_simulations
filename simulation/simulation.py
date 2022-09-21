@@ -62,33 +62,33 @@ class Simulation(ABC):
         ]
 
     def __get_stage_methods_to_monitor(self) -> List[Tuple[SimulationStage, Callable]]:
-        return [(stage, getattr(self, f"__launch_and_monitor_{stage.lower()}"))
+        return [(stage, getattr(self, f"launch_and_monitor_{stage.lower()}"))
                 for stage in self.simulation_status.get_stages()]
 
     @abstractmethod
-    def __launch_and_monitor_initialization(self) -> None:
+    def launch_and_monitor_initialization(self) -> None:
         ...
 
     @abstractmethod
-    def __launch_and_monitor_weather_data_transfer(self) -> None:
+    def launch_and_monitor_weather_data_transfer(self) -> None:
         ...
 
     @abstractmethod
-    def __launch_and_monitor_hydrus_simulation(self) -> None:
+    def launch_and_monitor_hydrus_simulation(self) -> None:
         ...
 
     @abstractmethod
-    def __launch_and_monitor_data_passing(self) -> None:
+    def launch_and_monitor_data_passing(self) -> None:
         ...
 
     @abstractmethod
-    def __launch_and_monitor_modflow_simulation(self) -> None:
+    def launch_and_monitor_modflow_simulation(self) -> None:
         ...
 
     @abstractmethod
-    def __launch_and_monitor_output_extraction_to_json(self) -> None:
+    def launch_and_monitor_output_extraction_to_json(self) -> None:
         ...
 
     @abstractmethod
-    def __launch_and_monitor_cleanup(self) -> None:
+    def launch_and_monitor_cleanup(self) -> None:
         ...

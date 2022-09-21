@@ -10,6 +10,9 @@ class SimulationStageStatus(StrEnum):
     SUCCESS = auto()
     ERROR = auto()
 
+    def is_finished(self):
+        return self == SimulationStageStatus.SUCCESS or self == SimulationStageStatus.ERROR
+
 
 class SimulationStage(StrEnum):
     INITIALIZATION = auto()

@@ -15,7 +15,7 @@ class SimulationStatus:
     def set_stage_status(self, stage: SimulationStage, new_status: SimulationStageStatus):
         self.stages_statuses[stage] = new_status
 
-    def get_stage_status(self, stage: SimulationStage):
+    def get_stage_status(self, stage: SimulationStage) -> SimulationStageStatus:
         return self.stages_statuses[stage]
 
     def to_json(self):
