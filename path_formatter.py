@@ -1,5 +1,4 @@
 import re
-from sys import platform
 
 DOCKER_CONST_PATH = "/run/desktop/mnt/host"
 
