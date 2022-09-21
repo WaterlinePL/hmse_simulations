@@ -3,8 +3,9 @@ import os
 import shutil
 import subprocess
 from abc import ABC
+from concurrent.futures import ThreadPoolExecutor, wait
 from dataclasses import dataclass
-from typing import List, Callable, Tuple, Optional
+from typing import List, Callable, Tuple, Optional, ClassVar
 
 import flopy
 import numpy as np
@@ -18,6 +19,8 @@ from hmse_simulations.hmse_projects.hmse_hydrological_models.weather_data import
 from hmse_simulations.hmse_projects.project_dao import WORKSPACE_PATH, ProjectDao, project_dao
 from hmse_simulations.hmse_projects.project_metadata import ProjectMetadata
 from hmse_simulations.hmse_projects.typing_help import ProjectID
+from hmse_simulations.simulation.deployment.hydrus_docker_deployer import HydrusDockerDeployer
+from hmse_simulations.simulation.deployment.modflow2005_docker_deployer import ModflowDockerDeployer
 from hmse_simulations.simulation.simulation_enums import SimulationStageStatus, SimulationStage
 from hmse_simulations.simulation.simulation_error import SimulationError
 from hmse_simulations.simulation.simulation_status import SimulationStatus
@@ -28,6 +31,8 @@ SIMULATION_DIR = "simulation"
 
 @dataclass
 class Simulation(ABC):
+    MAX_CONCURRENT_MODELS: ClassVar[int] = 4
+
     project_metadata: ProjectMetadata
     simulation_status: SimulationStatus
     simulation_error: Optional[SimulationError] = None
@@ -83,7 +88,7 @@ class Simulation(ABC):
 
     def launch_and_monitor_initialization(self) -> None:
         project_id = self.project_metadata.project_id
-        sim_dir = Simulation.__get_simulation_dir(project_id)
+        sim_dir = Simulation.get_simulation_dir(project_id)
 
         self.project_metadata.finished = False
         project_dao.save_or_update_metadata(self.project_metadata)
@@ -95,7 +100,7 @@ class Simulation(ABC):
 
     def launch_and_monitor_weather_data_transfer(self) -> None:
         project_id = self.project_metadata.project_id
-        sim_dir = Simulation.__get_simulation_dir(project_id)
+        sim_dir = Simulation.get_simulation_dir(project_id)
         hydrus_models_to_process = [hydrus_id for hydrus_id in self.__get_used_hydrus_models()
                                     if hydrus_id in self.project_metadata.hydrus_to_weather]
         for hydrus_id in hydrus_models_to_process:
@@ -111,20 +116,17 @@ class Simulation(ABC):
 
     def launch_and_monitor_hydrus_simulation(self) -> None:
         simulations = []
-        for hydrus_id in self.__get_used_hydrus_models():
-            path = os.path.join(Simulation.__get_simulation_dir(self.project_metadata.project_id), 'hydrus', hydrus_id)
-            hydrus_exec_path = path_formatter.convert_backslashes_to_slashes(app_config.hydrus_program_path)
-            proc = Simulation.__run_local_program(exec_path=hydrus_exec_path,
-                                                  args=[path_formatter.convert_backslashes_to_slashes(path)])
-            simulations.append(proc)
-
-        for proc in simulations:
-            proc.communicate(input="\n")  # Press enter to close program (blocking)
+        with ThreadPoolExecutor(max_workers=Simulation.MAX_CONCURRENT_MODELS) as exe:
+            for hydrus_id in self.__get_used_hydrus_models():
+                sim = HydrusDockerDeployer(self.project_metadata.project_id, hydrus_id)
+                sim.run_simulation_image()
+                simulations.append(exe.submit(sim.wait_for_termination))
+            wait(simulations)
 
     def launch_and_monitor_data_passing(self) -> None:
         project_id = self.project_metadata.project_id
         modflow_id = self.project_metadata.modflow_metadata.modflow_id
-        sim_dir = Simulation.__get_simulation_dir(project_id)
+        sim_dir = Simulation.get_simulation_dir(project_id)
         modflow_path = os.path.join(sim_dir, 'modflow', modflow_id)
         nam_file = modflow_utils.scan_for_modflow_file(modflow_path)
 
@@ -193,25 +195,15 @@ class Simulation(ABC):
                                      irch=rch_package.irch).write_file(check=False)
 
     def launch_and_monitor_modflow_simulation(self) -> None:
-        sim_dir = Simulation.__get_simulation_dir(self.project_metadata.project_id)
-        modflow_id = self.project_metadata.modflow_metadata.modflow_id
-        modflow_path = os.path.join(sim_dir, 'modflow', modflow_id)
-
-        current_dir = os.getcwd()
-
-        modflow_exec_path = path_formatter.convert_backslashes_to_slashes(app_config.modflow_program_path)
-        nam_file = modflow_utils.scan_for_modflow_file(modflow_path)
-
-        os.chdir(modflow_path)
-        proc = Simulation.__run_local_program(exec_path=modflow_exec_path,
-                                              args=[nam_file])
-        os.chdir(current_dir)
-        proc.communicate(input="\n")  # Press enter to close program (blocking)
+        deployer = ModflowDockerDeployer(self.project_metadata.project_id,
+                                         self.project_metadata.modflow_metadata.modflow_id)
+        deployer.run_simulation_image()
+        deployer.wait_for_termination()
 
     def launch_and_monitor_output_extraction_to_json(self) -> None:
         project_id = self.project_metadata.project_id
         modflow_id = self.project_metadata.modflow_metadata.modflow_id
-        sim_dir = Simulation.__get_simulation_dir(project_id)
+        sim_dir = Simulation.get_simulation_dir(project_id)
 
         modflow_dir = os.path.join(sim_dir, 'modflow', modflow_id)
         nam_file = modflow_utils.scan_for_modflow_file(modflow_dir)
@@ -232,7 +224,7 @@ class Simulation(ABC):
         project_dao.save_or_update_metadata(self.project_metadata)
 
     @staticmethod
-    def __get_simulation_dir(project_id: ProjectID):
+    def get_simulation_dir(project_id: ProjectID):
         return os.path.join(WORKSPACE_PATH, project_id, SIMULATION_DIR)
 
     @staticmethod
