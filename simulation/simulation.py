@@ -10,7 +10,7 @@ import flopy
 import numpy as np
 import phydrus as ph
 
-from config.app_config import app_config
+from config import app_config
 from hmse_simulations import path_formatter
 from hmse_simulations.hmse_projects.hmse_hydrological_models.hydrus import hydrus_utils
 from hmse_simulations.hmse_projects.hmse_hydrological_models.modflow import modflow_utils
@@ -113,7 +113,8 @@ class Simulation(ABC):
         simulations = []
         for hydrus_id in self.__get_used_hydrus_models():
             path = os.path.join(Simulation.__get_simulation_dir(self.project_metadata.project_id), 'hydrus', hydrus_id)
-            hydrus_exec_path = path_formatter.convert_backslashes_to_slashes(app_config.hydrus_program_path)
+            hydrus_exec_path = path_formatter.convert_backslashes_to_slashes(
+                app_config.get_config().hydrus_program_path)
             proc = Simulation.__run_local_program(exec_path=hydrus_exec_path,
                                                   args=[path_formatter.convert_backslashes_to_slashes(path)])
             simulations.append(proc)
@@ -199,7 +200,7 @@ class Simulation(ABC):
 
         current_dir = os.getcwd()
 
-        modflow_exec_path = path_formatter.convert_backslashes_to_slashes(app_config.modflow_program_path)
+        modflow_exec_path = path_formatter.convert_backslashes_to_slashes(app_config.get_config().modflow_program_path)
         nam_file = modflow_utils.scan_for_modflow_file(modflow_path)
 
         os.chdir(modflow_path)
