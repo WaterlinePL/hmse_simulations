@@ -43,9 +43,8 @@ class Simulation(ABC):
             try:
                 stage_monitor_method()
             except SimulationError as error:
-                self.simulation_error = error
                 self.simulation_status.set_stage_status(stage, SimulationStageStatus.ERROR)
-                return
+                raise SimulationError(description=error.description)
 
             self.simulation_status.set_stage_status(stage, SimulationStageStatus.SUCCESS)
 
@@ -144,14 +143,16 @@ class Simulation(ABC):
                 hydrus_recharge_path = os.path.join(sim_dir, 'hydrus', mapping_val, 'T_Level.out')
                 sum_v_bot = ph.read.read_tlevel(path=hydrus_recharge_path)['sum(vBot)']
 
+                # calc difference for each day (excluding spin_up period)
+                sum_v_bot = (-np.diff(sum_v_bot))[spin_up:]
                 if spin_up >= len(sum_v_bot):
-                    raise ValueError('Spin up is longer than hydrus model time')  # TODO
+                    raise SimulationError(description='Spin up is longer than hydrus model time')
 
             elif isinstance(mapping_val, float):
                 sum_v_bot = mapping_val
 
             else:
-                raise Exception("Unknown mapping in simulation!")  # TODO
+                raise SimulationError(description="Unknown mapping in simulation!")
 
             for shape in shapes_for_model:
                 mask = (shape == 1)  # Frontend sets explicitly 1
@@ -167,13 +168,10 @@ class Simulation(ABC):
                     if isinstance(sum_v_bot, float):
                         avg_v_bot_stress_period = sum_v_bot
                     else:
-                        # calc difference for each day (excluding spin_up period)
-                        sum_v_bot = (-np.diff(sum_v_bot))[spin_up:]
-
                         # average from all hydrus sum(vBot) values during given stress period
                         stress_period_end = stress_period_begin + stress_period_duration
                         if stress_period_begin >= len(sum_v_bot) or stress_period_end >= len(sum_v_bot):
-                            raise ValueError("Stress period " + str(idx + 1) + " is out of hydrus model time")
+                            raise SimulationError(description=f"Stress period {idx + 1} exceeds hydrus model time")
                         avg_v_bot_stress_period = np.average(sum_v_bot[stress_period_begin:stress_period_end])
 
                     # add calculated hydrus average sum(vBot) to modflow recharge array
