@@ -27,9 +27,8 @@ class Simulation(ABC):
             try:
                 stage_monitor_method()
             except SimulationError as error:
-                self.simulation_error = error
                 self.simulation_status.set_stage_status(stage, SimulationStageStatus.ERROR)
-                return
+                raise SimulationError(description=error.description)
 
             self.simulation_status.set_stage_status(stage, SimulationStageStatus.SUCCESS)
 

@@ -1,5 +1,6 @@
-class SimulationError(Exception):
+from werkzeug.exceptions import HTTPException
 
-    def __init__(self, message: str, logs: str):
-        super().__init__(message)
-        self.logs = logs
+
+class SimulationError(HTTPException):
+    code = 500
+    description = "Simulation failed!"
