@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from time import sleep
 from typing import List, Callable, Tuple, Optional
 
 from hmse_simulations.hmse_projects.project_metadata import ProjectMetadata
+from hmse_simulations.simulation.airflow_simulation_service import airflow_service
 from hmse_simulations.simulation.simulation_enums import SimulationStageStatus, SimulationStage
 from hmse_simulations.simulation.simulation_error import SimulationError
 from hmse_simulations.simulation.simulation_status import SimulationStatus
@@ -11,10 +13,14 @@ MODFLOW_OUTPUT_JSON = "results.json"
 
 
 @dataclass
-class Simulation(ABC):
+class Simulation:
     project_metadata: ProjectMetadata
     simulation_status: SimulationStatus
     simulation_error: Optional[SimulationError] = None
+    dag_run_id: Optional[str] = None
+
+    def set_dag_run_id(self, dag_run_id: str):
+        self.dag_run_id = dag_run_id
 
     def get_simulation_status(self):
         return self.simulation_status
@@ -47,7 +53,7 @@ class Simulation(ABC):
             SimulationStage.HYDRUS_SIMULATION,
             SimulationStage.DATA_PASSING,
             SimulationStage.MODFLOW_SIMULATION,
-            SimulationStage.OUTPUT_EXTRACTION_TO_JSON,
+            SimulationStage.OUTPUT_UPLOAD,
             SimulationStage.CLEANUP
         ]
 
@@ -56,7 +62,7 @@ class Simulation(ABC):
         return [
             SimulationStage.INITIALIZATION,
             SimulationStage.MODFLOW_SIMULATION,
-            SimulationStage.OUTPUT_EXTRACTION_TO_JSON,
+            SimulationStage.OUTPUT_UPLOAD,
             SimulationStage.CLEANUP
         ]
 
@@ -64,30 +70,47 @@ class Simulation(ABC):
         return [(stage, getattr(self, f"launch_and_monitor_{stage.lower()}"))
                 for stage in self.simulation_status.get_stages()]
 
-    @abstractmethod
     def launch_and_monitor_initialization(self) -> None:
-        ...
+        self.__monitor_job(task_id="prepare-simulation-volume-content")
 
-    @abstractmethod
     def launch_and_monitor_weather_data_transfer(self) -> None:
-        ...
+        self.__monitor_job(task_id="transfer-weather-files")
 
-    @abstractmethod
     def launch_and_monitor_hydrus_simulation(self) -> None:
-        ...
+        self.__monitor_mapped_job(task_id="hydrus-simulation")
 
-    @abstractmethod
     def launch_and_monitor_data_passing(self) -> None:
-        ...
+        self.__monitor_job(task_id="transfer-hydrus-results-to-modflow")
 
-    @abstractmethod
     def launch_and_monitor_modflow_simulation(self) -> None:
-        ...
+        self.__monitor_mapped_job(task_id="modflow-simulation")
 
-    @abstractmethod
-    def launch_and_monitor_output_extraction_to_json(self) -> None:
-        ...
+    def launch_and_monitor_output_upload(self) -> None:
+        self.__monitor_job(task_id="upload-simulation-results")
 
-    @abstractmethod
     def launch_and_monitor_cleanup(self) -> None:
-        ...
+        self.__monitor_job(task_id="cleanup-simulation-volume-content")
+
+    def __monitor_job(self, task_id: str):
+        self.__monitor_airflow_task(task_id, status_getter_function=airflow_service.get_simulation_stage_status)
+
+    def __monitor_mapped_job(self, task_id: str):
+        self.__monitor_airflow_task(task_id, status_getter_function=airflow_service.get_mapped_stage_status)
+
+    def __monitor_airflow_task(self, task_id: str, status_getter_function: Callable):
+        done = False
+        while not done:
+            status = status_getter_function(
+                run_id=self.dag_run_id,
+                task_id=task_id
+            )
+            done = Simulation.__handle_stage_status(status)
+            sleep(2)
+
+    @staticmethod
+    def __handle_stage_status(stage_status: SimulationStageStatus) -> bool:
+        if stage_status == SimulationStageStatus.ERROR:
+            raise SimulationError(f"Step {stage_status} has failed!")
+        if stage_status == SimulationStageStatus.SUCCESS:
+            return True
+        return False

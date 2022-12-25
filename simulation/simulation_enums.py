@@ -20,7 +20,7 @@ class SimulationStage(StrEnum):
     HYDRUS_SIMULATION = auto()
     DATA_PASSING = auto()
     MODFLOW_SIMULATION = auto()
-    OUTPUT_EXTRACTION_TO_JSON = auto()
+    OUTPUT_UPLOAD = auto()
     CLEANUP = auto()
 
     def __get_name(self) -> str:
@@ -30,7 +30,7 @@ class SimulationStage(StrEnum):
             SimulationStage.HYDRUS_SIMULATION: "Hydrus simulations",
             SimulationStage.DATA_PASSING: "Passing data from Hydrus to Modflow",
             SimulationStage.MODFLOW_SIMULATION: "Modflow simulation",
-            SimulationStage.OUTPUT_EXTRACTION_TO_JSON: "Exporting output to JSON",
+            SimulationStage.OUTPUT_UPLOAD: "Uploading output to remote drive",
             SimulationStage.CLEANUP: "Cleaning up after simulation",
         }[self]
 
