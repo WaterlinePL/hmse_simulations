@@ -5,8 +5,8 @@ from requests.auth import HTTPBasicAuth
 
 from hmse_simulations.hmse_projects.project_dao import project_dao
 from hmse_simulations.hmse_projects.project_metadata import ProjectMetadata
-from simulation_enums import SimulationStageStatus
-from simulation_error import SimulationError
+from hmse_simulations.simulation.simulation_enums import SimulationStageStatus
+from hmse_simulations.simulation.simulation_error import SimulationError
 
 AIRFLOW_API_ENDPOINT = os.environ["AIRFLOW_API_ENDPOINT"]
 AIRFLOW_USER = os.environ["AIRFLOW_USER"]

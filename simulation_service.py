@@ -1,15 +1,10 @@
-import datetime
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from threading import Thread
-
-import pytz
 
 from hmse_simulations.hmse_projects.project_metadata import ProjectMetadata
 from hmse_simulations.hmse_projects.typing_help import ProjectID
 from hmse_simulations.simulation.simulation import Simulation
-from hmse_simulations.simulation.simulation_enums import SimulationStage, SimulationStageStatus
-from hmse_simulations.simulation.simulation_error import SimulationUnimplementedError
+from hmse_simulations.simulation.simulation_enums import SimulationStage
 from hmse_simulations.simulation.simulation_status import SimulationStatus
 
 
@@ -31,9 +26,7 @@ class SimulationService:
 
         simulation = Simulation(project_metadata=project_metadata,
                                 simulation_status=SimulationStatus(stages))
-
         self.register_simulation_if_necessary(simulation)
-        simulation.set_dag_run_id(self.project_ids_to_run_ids[simulation.project_metadata.project_id])
 
         # Run simulation in background
         thread = Thread(target=simulation.run_simulation)
@@ -52,12 +45,7 @@ class SimulationService:
         return status
 
     def register_simulation_if_necessary(self, simulation: Simulation):
-        run_id = SimulationService.generate_unique_run_id(simulation.project_metadata.project_id)
-        self.project_ids_to_run_ids[simulation.project_metadata.project_id] = run_id
-
-    @staticmethod
-    def generate_unique_run_id(project_id: ProjectID):
-        return f"{project_id}-{datetime.datetime.now(pytz.timezone('Europe/Warsaw'))}"
+        self.project_ids_to_run_ids[simulation.project_metadata.project_id] = simulation
 
 
 simulation_service = SimulationService()

@@ -1,9 +1,13 @@
-from abc import ABC, abstractmethod
+import datetime
 from dataclasses import dataclass
 from time import sleep
 from typing import List, Callable, Tuple, Optional
 
+import pytz
+
+from hmse_simulations.hmse_projects.project_dao import project_dao
 from hmse_simulations.hmse_projects.project_metadata import ProjectMetadata
+from hmse_simulations.hmse_projects.typing_help import ProjectID
 from hmse_simulations.simulation.airflow_simulation_service import airflow_service
 from hmse_simulations.simulation.simulation_enums import SimulationStageStatus, SimulationStage
 from hmse_simulations.simulation.simulation_error import SimulationError
@@ -19,13 +23,14 @@ class Simulation:
     simulation_error: Optional[SimulationError] = None
     dag_run_id: Optional[str] = None
 
-    def set_dag_run_id(self, dag_run_id: str):
-        self.dag_run_id = dag_run_id
+    def __post_init__(self):
+        self.dag_run_id = Simulation.generate_unique_run_id(self.project_metadata.project_id)
 
     def get_simulation_status(self):
         return self.simulation_status
 
     def run_simulation(self) -> None:
+        airflow_service.start_simulation(self.dag_run_id, self.project_metadata)
         for stage, stage_monitor_method in self.__get_stage_methods_to_monitor():
             self.simulation_status.set_stage_status(stage, SimulationStageStatus.RUNNING)
 
@@ -90,6 +95,8 @@ class Simulation:
 
     def launch_and_monitor_cleanup(self) -> None:
         self.__monitor_job(task_id="cleanup-simulation-volume-content")
+        self.project_metadata.finished = True
+        project_dao.save_or_update_metadata(self.project_metadata)
 
     def __monitor_job(self, task_id: str):
         self.__monitor_airflow_task(task_id, status_getter_function=airflow_service.get_simulation_stage_status)
@@ -114,3 +121,7 @@ class Simulation:
         if stage_status == SimulationStageStatus.SUCCESS:
             return True
         return False
+
+    @staticmethod
+    def generate_unique_run_id(project_id: ProjectID):
+        return f"{project_id}-{datetime.datetime.now(pytz.timezone('Europe/Warsaw'))}"
