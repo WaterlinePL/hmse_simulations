@@ -1,6 +1,6 @@
 from typing import List
 
-from hmse_simulations.simulation.simulation_enums import SimulationStage, SimulationStageStatus
+from .simulation_enums import SimulationStage, SimulationStageStatus
 
 
 class SimulationStatus:

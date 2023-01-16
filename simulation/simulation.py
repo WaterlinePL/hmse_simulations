@@ -11,16 +11,16 @@ import numpy as np
 import phydrus as ph
 
 from config import app_config
-from hmse_simulations import path_formatter
-from hmse_simulations.hmse_projects.hmse_hydrological_models.hydrus import hydrus_utils
-from hmse_simulations.hmse_projects.hmse_hydrological_models.modflow import modflow_utils
-from hmse_simulations.hmse_projects.hmse_hydrological_models.weather_data import weather_util
-from hmse_simulations.hmse_projects.project_dao import WORKSPACE_PATH, ProjectDao, project_dao
-from hmse_simulations.hmse_projects.project_metadata import ProjectMetadata
-from hmse_simulations.hmse_projects.typing_help import ProjectID
-from hmse_simulations.simulation.simulation_enums import SimulationStageStatus, SimulationStage
-from hmse_simulations.simulation.simulation_error import SimulationError
-from hmse_simulations.simulation.simulation_status import SimulationStatus
+from .. import path_formatter
+from ..hmse_projects.hmse_hydrological_models.hydrus import hydrus_utils
+from ..hmse_projects.hmse_hydrological_models.modflow import modflow_utils
+from ..hmse_projects.hmse_hydrological_models.weather_data import weather_util
+from ..hmse_projects.project_dao import WORKSPACE_PATH, ProjectDao, project_dao
+from ..hmse_projects.typing_help import ProjectID
+from ..hmse_projects.project_metadata import ProjectMetadata
+from .simulation_enums import SimulationStageStatus, SimulationStage
+from .simulation_error import SimulationError
+from .simulation_status import SimulationStatus
 
 MODFLOW_OUTPUT_JSON = "results.json"
 SIMULATION_DIR = "simulation"
