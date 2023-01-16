@@ -5,13 +5,13 @@ from typing import List, Callable, Tuple, Optional
 
 import pytz
 
-from hmse_simulations.hmse_projects.project_dao import project_dao
-from hmse_simulations.hmse_projects.project_metadata import ProjectMetadata
-from hmse_simulations.hmse_projects.typing_help import ProjectID
-from hmse_simulations.simulation.airflow_simulation_service import airflow_service
-from hmse_simulations.simulation.simulation_enums import SimulationStageStatus, SimulationStage
-from hmse_simulations.simulation.simulation_error import SimulationError
-from hmse_simulations.simulation.simulation_status import SimulationStatus
+from ..hmse_projects.project_dao import project_dao
+from ..hmse_projects.typing_help import ProjectID
+from .airflow_simulation_service import airflow_service
+from ..hmse_projects.project_metadata import ProjectMetadata
+from .simulation_enums import SimulationStageStatus, SimulationStage
+from .simulation_error import SimulationError
+from .simulation_status import SimulationStatus
 
 MODFLOW_OUTPUT_JSON = "results.json"
 
