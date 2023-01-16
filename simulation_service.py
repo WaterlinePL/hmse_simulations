@@ -1,13 +1,12 @@
-from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from threading import Thread
-from typing import Set, Dict
+from typing import Dict
 
-from hmse_simulations.hmse_projects.project_metadata import ProjectMetadata
-from hmse_simulations.hmse_projects.typing_help import ProjectID
-from hmse_simulations.simulation.simulation import Simulation
-from hmse_simulations.simulation.simulation_enums import SimulationStage
-from hmse_simulations.simulation.simulation_status import SimulationStatus
+from .hmse_projects.project_metadata import ProjectMetadata
+from .hmse_projects.typing_help import ProjectID
+from .simulation.simulation import Simulation
+from .simulation.simulation_enums import SimulationStage
+from .simulation.simulation_status import SimulationStatus
 
 
 @dataclass
