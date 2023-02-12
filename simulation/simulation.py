@@ -2,92 +2,41 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Callable, Tuple, Optional
 
+from .simulation_chapter import SimulationChapter
 from ..hmse_projects.project_metadata import ProjectMetadata
-from .simulation_enums import SimulationStageStatus, SimulationStage
+from .simulation_enums import SimulationStageStatus, SimulationStageName
 from .simulation_error import SimulationError
-from .simulation_status import SimulationStatus
+from .simulation_status import ChapterStatus
 
 MODFLOW_OUTPUT_JSON = "results.json"
 
 
-@dataclass
 class Simulation(ABC):
-    project_metadata: ProjectMetadata
-    simulation_status: SimulationStatus
-    simulation_error: Optional[SimulationError] = None
 
-    def get_simulation_status(self):
-        return self.simulation_status
+    def __init__(self, project_metadata: ProjectMetadata, sim_chapters: List[SimulationChapter]):
+        self.project_metadata = project_metadata
+        self.chapter_statuses = [ChapterStatus(chapter, project_metadata) for chapter in sim_chapters]
+        self.simulation_error = None
 
-    def run_simulation(self) -> None:
-        for stage, stage_monitor_method in self.__get_stage_methods_to_monitor():
-            self.simulation_status.set_stage_status(stage, SimulationStageStatus.RUNNING)
+    ## TODO: steadystate should not be Hydrused??????
+
+    def run_simulation(self):
+        for chapter in self.chapter_statuses:
+            self.__run_chapter(chapter)
+
+    def get_simulation_status(self) -> List[ChapterStatus]:
+        return self.chapter_statuses
+
+    def __run_chapter(self, chapter_status: ChapterStatus) -> None:
+        chapter_tasks = chapter_status.chapter.get_simulation_tasks(self.project_metadata)
+        for i, workflow_task in enumerate(chapter_tasks):
+            chapter_status.set_stage_status(SimulationStageStatus.RUNNING, stage_idx=i)
 
             # Launch and monitor stage
             try:
-                stage_monitor_method()
+                workflow_task(self.project_metadata)
             except SimulationError as error:
-                self.simulation_status.set_stage_status(stage, SimulationStageStatus.ERROR)
+                chapter_status.set_stage_status(SimulationStageStatus.ERROR, stage_idx=i)
                 raise SimulationError(description=error.description)
 
-            self.simulation_status.set_stage_status(stage, SimulationStageStatus.SUCCESS)
-
-    def get_stages(self):
-        return self.simulation_status.get_stages()
-
-    @staticmethod
-    def all_stages() -> List[SimulationStage]:
-        """
-        This method is used to show the whole flow of simulation.
-        @return: All possible stages in simulation
-        """
-        return [
-            SimulationStage.INITIALIZATION,
-            SimulationStage.WEATHER_DATA_TRANSFER,
-            SimulationStage.HYDRUS_SIMULATION,
-            SimulationStage.DATA_PASSING,
-            SimulationStage.MODFLOW_SIMULATION,
-            SimulationStage.OUTPUT_EXTRACTION_TO_JSON,
-            SimulationStage.CLEANUP
-        ]
-
-    @staticmethod
-    def basic_stages() -> List[SimulationStage]:
-        return [
-            SimulationStage.INITIALIZATION,
-            SimulationStage.MODFLOW_SIMULATION,
-            SimulationStage.OUTPUT_EXTRACTION_TO_JSON,
-            SimulationStage.CLEANUP
-        ]
-
-    def __get_stage_methods_to_monitor(self) -> List[Tuple[SimulationStage, Callable]]:
-        return [(stage, getattr(self, f"launch_and_monitor_{stage.lower()}"))
-                for stage in self.simulation_status.get_stages()]
-
-    @abstractmethod
-    def launch_and_monitor_initialization(self) -> None:
-        ...
-
-    @abstractmethod
-    def launch_and_monitor_weather_data_transfer(self) -> None:
-        ...
-
-    @abstractmethod
-    def launch_and_monitor_hydrus_simulation(self) -> None:
-        ...
-
-    @abstractmethod
-    def launch_and_monitor_data_passing(self) -> None:
-        ...
-
-    @abstractmethod
-    def launch_and_monitor_modflow_simulation(self) -> None:
-        ...
-
-    @abstractmethod
-    def launch_and_monitor_output_extraction_to_json(self) -> None:
-        ...
-
-    @abstractmethod
-    def launch_and_monitor_cleanup(self) -> None:
-        ...
+            chapter_status.set_stage_status(SimulationStageStatus.SUCCESS, stage_idx=i)
