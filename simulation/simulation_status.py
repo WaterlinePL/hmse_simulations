@@ -1,23 +1,35 @@
-from typing import List
+from typing import List, Optional
 
-from .simulation_enums import SimulationStage, SimulationStageStatus
+from .simulation_chapter import SimulationChapter
+from .simulation_enums import SimulationStageName, SimulationStageStatus, SimulationStage
+from .tasks import hmse_task
+from ..hmse_projects.project_metadata import ProjectMetadata
 
 
-class SimulationStatus:
+class ChapterStatus:
 
-    def __init__(self, stages: List[SimulationStage]):
+    def __init__(self, chapter: SimulationChapter, metadata: ProjectMetadata):
+        stages = [hmse_task.get_stage_name(t) for t in chapter.get_simulation_tasks(metadata)]
+        self.chapter = chapter
         self.stages = stages
-        self.stages_statuses = {stage: SimulationStageStatus.PENDING for stage in stages}
+        self.stages_statuses = [SimulationStage(stage, SimulationStageStatus.PENDING) for stage in stages]
 
-    def get_stages(self) -> List[SimulationStage]:
+    def get_stages(self) -> List[SimulationStageName]:
         return self.stages
 
-    def set_stage_status(self, stage: SimulationStage, new_status: SimulationStageStatus):
-        self.stages_statuses[stage] = new_status
+    def set_stage_status(self, new_status: SimulationStageStatus, stage_idx: int):
+        self.stages_statuses[stage_idx].status = new_status
 
-    def get_stage_status(self, stage: SimulationStage) -> SimulationStageStatus:
-        return self.stages_statuses[stage]
-
-    def to_json(self):
-        stage_dict = {step.to_id_and_name()[0]: self.stages_statuses[step] for step in self.stages_statuses.keys()}
-        return stage_dict
+    def to_json(self, i: int):
+        stage_statuses = [
+            {
+                "id": f"{stage.name.get_as_id()}{i}",
+                "name": stage.name.get_name(),
+                "status": stage.status
+            } for i, stage in enumerate(self.stages_statuses)
+        ]
+        return {
+            "chapter_id": f"{self.chapter.get_as_id()}{i}",
+            "chapter_name": self.chapter.get_name(),
+            "stage_statuses": stage_statuses
+        }

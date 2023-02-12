@@ -1,5 +1,5 @@
+from dataclasses import dataclass
 from enum import auto
-from typing import Tuple
 
 from strenum import StrEnum
 
@@ -14,7 +14,7 @@ class SimulationStageStatus(StrEnum):
         return self == SimulationStageStatus.SUCCESS or self == SimulationStageStatus.ERROR
 
 
-class SimulationStage(StrEnum):
+class SimulationStageName(StrEnum):
     INITIALIZATION = auto()
     WEATHER_DATA_TRANSFER = auto()
     HYDRUS_SIMULATION = auto()
@@ -23,17 +23,22 @@ class SimulationStage(StrEnum):
     OUTPUT_UPLOAD = auto()
     CLEANUP = auto()
 
-    def __get_name(self) -> str:
+    def get_as_id(self) -> str:
+        return self.lower().replace('_', ' ').title().replace(' ', '')
+
+    def get_name(self) -> str:
         return {
-            SimulationStage.INITIALIZATION: "Simulation initialization",
-            SimulationStage.WEATHER_DATA_TRANSFER: "Applying weather data to Hydrus models",
-            SimulationStage.HYDRUS_SIMULATION: "Hydrus simulations",
-            SimulationStage.DATA_PASSING: "Passing data from Hydrus to Modflow",
-            SimulationStage.MODFLOW_SIMULATION: "Modflow simulation",
-            SimulationStage.OUTPUT_UPLOAD: "Uploading output to remote drive",
-            SimulationStage.CLEANUP: "Cleaning up after simulation",
+            SimulationStageName.INITIALIZATION: "Simulation initialization",
+            SimulationStageName.WEATHER_DATA_TRANSFER: "Applying weather data to Hydrus models",
+            SimulationStageName.HYDRUS_SIMULATION: "Hydrus simulations",
+            SimulationStageName.DATA_PASSING: "Passing data from Hydrus to Modflow",
+            SimulationStageName.MODFLOW_SIMULATION: "Modflow simulation",
+            SimulationStageName.OUTPUT_EXTRACTION_TO_JSON: "Exporting output to JSON",
+            SimulationStageName.CLEANUP: "Cleaning up after simulation",
         }[self]
 
-    def to_id_and_name(self) -> Tuple[str, str]:
-        my_id = self.lower().replace('_', ' ').title().replace(' ', '')
-        return my_id, self.__get_name()
+
+@dataclass
+class SimulationStage:
+    name: SimulationStageName
+    status: SimulationStageStatus
