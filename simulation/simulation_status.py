@@ -14,8 +14,11 @@ class ChapterStatus:
         self.stages = stages
         self.stages_statuses = [SimulationStage(stage, SimulationStageStatus.PENDING) for stage in stages]
 
-    def get_stages(self) -> List[SimulationStageName]:
+    def get_stages_names(self) -> List[SimulationStageName]:
         return self.stages
+
+    def get_stages_statuses(self) -> List[SimulationStage]:
+        return self.stages_statuses
 
     def set_stage_status(self, new_status: SimulationStageStatus, stage_idx: int):
         self.stages_statuses[stage_idx].status = new_status

@@ -17,6 +17,7 @@ class SimulationChapter(StrEnum):
     FEEDBACK_WARMUP_STEADY_STATE = auto()
     FEEDBACK_WARMUP_TRANSIENT = auto()
     FEEDBACK_ITERATION = auto()
+    SIMULATION_CONCLUSION = auto()
 
     def get_simulation_tasks(self, metadata: ProjectMetadata) -> List[Callable[[ProjectMetadata], None]]:
         tasks = copy.deepcopy(CHAPTER_TO_TASK_MAPPING[self])
@@ -61,9 +62,7 @@ __SIMPLE_COUPLING_TASKS = [
     DataTasks.weather_data_to_hydrus,
     SimulationTasks.hydrus_simulation,
     DataTasks.hydrus_to_modflow,
-    SimulationTasks.modflow_simulation,
-    ConfigurationTasks.output_extraction_to_json,
-    ConfigurationTasks.cleanup
+    SimulationTasks.modflow_simulation
 ]
 
 __FEEDBACK_WARMUP_STEADY_STATE_TASKS = [
@@ -93,9 +92,15 @@ __FEEDBACK_ITERATION_TASKS = [
     DataTasks.modflow_to_hydrus
 ]
 
+__SIMULATION_CONCLUSION_TASKS = [
+    ConfigurationTasks.output_extraction_to_json,
+    ConfigurationTasks.cleanup
+]
+
 CHAPTER_TO_TASK_MAPPING = {
     SimulationChapter.SIMPLE_COUPLING: __SIMPLE_COUPLING_TASKS,
     SimulationChapter.FEEDBACK_WARMUP_STEADY_STATE: __FEEDBACK_WARMUP_STEADY_STATE_TASKS,
     SimulationChapter.FEEDBACK_WARMUP_TRANSIENT: __FEEDBACK_WARMUP_TRANSIENT_TASKS,
-    SimulationChapter.FEEDBACK_ITERATION: __FEEDBACK_ITERATION_TASKS
+    SimulationChapter.FEEDBACK_ITERATION: __FEEDBACK_ITERATION_TASKS,
+    SimulationChapter.SIMULATION_CONCLUSION: __SIMULATION_CONCLUSION_TASKS
 }
