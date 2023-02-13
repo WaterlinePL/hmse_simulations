@@ -66,10 +66,32 @@ __SIMPLE_COUPLING_TASKS = [
     ConfigurationTasks.cleanup
 ]
 
-# TODO
-__FEEDBACK_WARMUP_STEADY_STATE_TASKS = []
-__FEEDBACK_WARMUP_TRANSIENT_TASKS = []
-__FEEDBACK_ITERATION_TASKS = []
+__FEEDBACK_WARMUP_STEADY_STATE_TASKS = [
+    ConfigurationTasks.initialization,
+    DataTasks.weather_data_to_hydrus,
+    ConfigurationTasks.initialize_new_iteration_files,
+    ConfigurationTasks.create_per_zone_hydrus_models,
+    DataTasks.modflow_init_condition_transfer_steady_state,
+    SimulationTasks.hydrus_simulation
+]
+
+__FEEDBACK_WARMUP_TRANSIENT_TASKS = [
+    ConfigurationTasks.initialization,
+    DataTasks.weather_data_to_hydrus,
+    ConfigurationTasks.initialize_new_iteration_files,
+    ConfigurationTasks.create_per_zone_hydrus_models,
+    DataTasks.modflow_init_condition_transfer_transient,
+    SimulationTasks.hydrus_simulation
+]
+
+__FEEDBACK_ITERATION_TASKS = [
+    ConfigurationTasks.iteration_pre_configuration,
+    ConfigurationTasks.initialize_new_iteration_files,
+    SimulationTasks.hydrus_simulation,
+    DataTasks.hydrus_to_modflow,
+    SimulationTasks.modflow_simulation,
+    DataTasks.modflow_to_hydrus
+]
 
 CHAPTER_TO_TASK_MAPPING = {
     SimulationChapter.SIMPLE_COUPLING: __SIMPLE_COUPLING_TASKS,

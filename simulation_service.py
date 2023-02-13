@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from threading import Thread
 from typing import List
 
+from .hmse_projects import project_service
 from .hmse_projects.project_metadata import ProjectMetadata
 from .hmse_projects.typing_help import ProjectID
 from .simulation import simulation_configurator
@@ -43,10 +44,12 @@ class SimulationMockService(SimulationService):
         pass
 
     def check_simulation_status(self, project_id: ProjectID) -> List[ChapterStatus]:
-        single_chapter_status = ChapterStatus(SimulationChapter.SIMPLE_COUPLING, ProjectMetadata("test", "test"))
-        single_chapter_status.set_stage_status(SimulationStageStatus.SUCCESS, stage_idx=0)
-        single_chapter_status.set_stage_status(SimulationStageStatus.RUNNING, stage_idx=1)
-        return [single_chapter_status]
+        metadata = project_service.get(project_id)
+        simulation = simulation_configurator.configure_simulation(metadata)
+        status = simulation.get_simulation_status()
+        status[0].set_stage_status(SimulationStageStatus.SUCCESS, stage_idx=0)
+        status[0].set_stage_status(SimulationStageStatus.RUNNING, stage_idx=1)
+        return status
 
     def register_simulation_if_necessary(self, simulation: Simulation):
         pass
