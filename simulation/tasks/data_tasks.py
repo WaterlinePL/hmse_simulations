@@ -15,6 +15,24 @@ class DataTasks(ABC):
 
     @staticmethod
     @abstractmethod
-    @hmse_task(stage_name=SimulationStageName.DATA_PASSING)
+    @hmse_task(stage_name=SimulationStageName.HYDRUS_TO_MODFLOW_DATA_PASSING)
     def hydrus_to_modflow(project_metadata: ProjectMetadata) -> None:
+        ...
+
+    @staticmethod
+    @abstractmethod
+    @hmse_task(stage_name=SimulationStageName.MODFLOW_TO_HYDRUS_DATA_PASSING)
+    def modflow_to_hydrus(project_metadata: ProjectMetadata) -> None:
+        ...
+
+    @staticmethod
+    @abstractmethod
+    @hmse_task(stage_name=SimulationStageName.MODFLOW_INIT_CONDITION_TRANSFER_STEADY_STATE)
+    def modflow_init_condition_transfer_steady_state(project_metadata: ProjectMetadata) -> None:
+        ...
+
+    @staticmethod
+    @abstractmethod
+    @hmse_task(stage_name=SimulationStageName.MODFLOW_INIT_CONDITION_TRANSFER_TRANSIENT)
+    def modflow_init_condition_transfer_transient(project_metadata: ProjectMetadata) -> None:
         ...
