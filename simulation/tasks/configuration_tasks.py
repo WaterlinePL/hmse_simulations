@@ -1,20 +1,20 @@
 import json
 import os
 import shutil
-from abc import ABC, abstractmethod
 
 import flopy
 import numpy as np
 
 from .hmse_task import hmse_task
 from ..simulation_enums import SimulationStageName
-from ...hmse_projects.hmse_hydrological_models.local_fs_configuration import local_paths
-from ...hmse_projects.hmse_hydrological_models.modflow import modflow_utils
+from ...hmse_projects.hmse_hydrological_models.hydrus import hydrus_utils, hydrus_model_management
+from ...hmse_projects.hmse_hydrological_models.local_fs_configuration import local_paths, feedback_loop_file_management
+from ...hmse_projects.hmse_hydrological_models.modflow import modflow_utils, modflow_model_management
 from ...hmse_projects.project_dao import project_dao
 from ...hmse_projects.project_metadata import ProjectMetadata
 
 
-class ConfigurationTasks(ABC):
+class ConfigurationTasks:
 
     @staticmethod
     @hmse_task(stage_name=SimulationStageName.INITIALIZATION)
@@ -57,19 +57,25 @@ class ConfigurationTasks(ABC):
         pass
 
     @staticmethod
-    @abstractmethod
     @hmse_task(stage_name=SimulationStageName.INITIALIZE_NEW_ITERATION_FILES)
     def initialize_new_iteration_files(project_metadata: ProjectMetadata) -> None:
-        ...
+        modflow_model_management.prepare_model_for_next_iteration(project_metadata.project_id,
+                                                                  project_metadata.modflow_metadata.modflow_id)
+        hydrus_ids_data = hydrus_utils.get_compound_hydrus_ids_for_feedback_loop(project_metadata.shapes_to_hydrus)
+        for ref_hydrus_id, compound_hydrus_id in hydrus_ids_data:
+            hydrus_model_management.prepare_model_for_next_iteration(project_id=project_metadata.project_id,
+                                                                     ref_hydrus_id=ref_hydrus_id,
+                                                                     compound_hydrus_id=compound_hydrus_id,
+                                                                     spin_up=project_metadata.spin_up)
 
     @staticmethod
-    @abstractmethod
     @hmse_task(stage_name=SimulationStageName.CREATE_PER_ZONE_HYDRUS_MODELS)
     def create_per_zone_hydrus_models(project_metadata: ProjectMetadata) -> None:
-        ...
+        hydrus_to_shapes = hydrus_utils.get_hydrus_to_shapes_mapping(project_metadata.shapes_to_hydrus)
+        feedback_loop_file_management.create_per_shape_hydrus_models(project_id=project_metadata.project_id,
+                                                                     used_hydrus_models=hydrus_to_shapes)
 
     @staticmethod
-    @abstractmethod
     @hmse_task(stage_name=SimulationStageName.ITERATION_PRE_CONFIGURATION)
     def iteration_pre_configuration(project_metadata: ProjectMetadata) -> None:
-        ...
+        feedback_loop_file_management.pre_configure_iteration(project_metadata.project_id)
