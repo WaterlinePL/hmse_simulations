@@ -33,10 +33,12 @@ class DataTasks:
         model_to_shapes_mapping = hydrus_utils.get_hydrus_mapping_for_transfer_to_modflow(shapes_to_hydrus,
                                                                                           use_compound_ids)
         try:
+            is_feedback_loop = project_metadata.simulation_mode == SimulationMode.WITH_FEEDBACK
             data_tasks_logic.recharge_from_hydrus_to_modflow(project_id=project_id,
-                                                             modflow_id=project_metadata.modflow_metadata.modflow_id,
+                                                             modflow_metadata=project_metadata.modflow_metadata,
                                                              spin_up=project_metadata.spin_up,
-                                                             model_to_shapes_mapping=model_to_shapes_mapping)
+                                                             model_to_shapes_mapping=model_to_shapes_mapping,
+                                                             feedback_loop=is_feedback_loop)
         except DataProcessingException as e:
             raise SimulationError(description=str(e))
 
@@ -44,35 +46,41 @@ class DataTasks:
     @hmse_task(stage_name=SimulationStageName.MODFLOW_TO_HYDRUS_DATA_PASSING)
     def modflow_to_hydrus(project_metadata: ProjectMetadata) -> None:
         project_id = project_metadata.project_id
-        modflow_id = project_metadata.modflow_metadata.modflow_id
         for shape_id in project_metadata.shapes:
             plain_hydrus_id = project_metadata.shapes_to_hydrus[shape_id]
             if not isinstance(plain_hydrus_id, str):
                 continue
-            data_tasks_logic.transfer_water_level_to_hydrus(project_id, plain_hydrus_id, modflow_id, shape_id,
+            data_tasks_logic.transfer_water_level_to_hydrus(project_id,
+                                                            plain_hydrus_id,
+                                                            project_metadata.modflow_metadata,
+                                                            shape_id,
                                                             use_modflow_results=True)
 
     @staticmethod
     @hmse_task(stage_name=SimulationStageName.MODFLOW_INIT_CONDITION_TRANSFER_STEADY_STATE)
     def modflow_init_condition_transfer_steady_state(project_metadata: ProjectMetadata) -> None:
         project_id = project_metadata.project_id
-        modflow_id = project_metadata.modflow_metadata.modflow_id
         SimulationTasks.modflow_simulation(project_metadata)
         for shape_id in project_metadata.shapes:
             plain_hydrus_id = project_metadata.shapes_to_hydrus[shape_id]
             if not isinstance(plain_hydrus_id, str):
                 continue
-            data_tasks_logic.transfer_water_level_to_hydrus(project_id, plain_hydrus_id, modflow_id, shape_id,
+            data_tasks_logic.transfer_water_level_to_hydrus(project_id,
+                                                            plain_hydrus_id,
+                                                            project_metadata.modflow_metadata,
+                                                            shape_id,
                                                             use_modflow_results=True)
 
     @staticmethod
     @hmse_task(stage_name=SimulationStageName.MODFLOW_INIT_CONDITION_TRANSFER_TRANSIENT)
     def modflow_init_condition_transfer_transient(project_metadata: ProjectMetadata) -> None:
         project_id = project_metadata.project_id
-        modflow_id = project_metadata.modflow_metadata.modflow_id
         for shape_id in project_metadata.shapes:
             plain_hydrus_id = project_metadata.shapes_to_hydrus[shape_id]
             if not isinstance(plain_hydrus_id, str):
                 continue
-            data_tasks_logic.transfer_water_level_to_hydrus(project_id, plain_hydrus_id, modflow_id, shape_id,
+            data_tasks_logic.transfer_water_level_to_hydrus(project_id,
+                                                            plain_hydrus_id,
+                                                            project_metadata.modflow_metadata,
+                                                            shape_id,
                                                             use_modflow_results=False)
