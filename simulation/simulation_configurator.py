@@ -20,9 +20,9 @@ def __chapters_from_metadata(project_metadata: ProjectMetadata) -> List[Simulati
         starts_steady = modflow_steps[0].type == ModflowStepType.STEADY_STATE
         chapters = [SimulationChapter.FEEDBACK_WARMUP_STEADY_STATE
                     if starts_steady else SimulationChapter.FEEDBACK_WARMUP_TRANSIENT]
-        chapters += [SimulationChapter.FEEDBACK_ITERATION for _ in modflow_steps[1:]]
+        chapters += [SimulationChapter.FEEDBACK_ITERATION for _ in modflow_steps[1:-1]]
+        chapters.append(SimulationChapter.SIMULATION_FINAL_ITERATION)
     else:
         raise KeyError("Unknown simulation mode!")
 
-    chapters.append(SimulationChapter.SIMULATION_CONCLUSION)
     return chapters

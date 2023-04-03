@@ -17,7 +17,7 @@ class SimulationChapter(StrEnum):
     FEEDBACK_WARMUP_STEADY_STATE = auto()
     FEEDBACK_WARMUP_TRANSIENT = auto()
     FEEDBACK_ITERATION = auto()
-    SIMULATION_CONCLUSION = auto()
+    SIMULATION_FINAL_ITERATION = auto()
 
     def get_simulation_tasks(self, metadata: ProjectMetadata) -> List[Callable[[ProjectMetadata], None]]:
         tasks = copy.deepcopy(CHAPTER_TO_TASK_MAPPING[self])
@@ -62,14 +62,16 @@ __SIMPLE_COUPLING_TASKS = [
     DataTasks.weather_data_to_hydrus,
     SimulationTasks.hydrus_simulation,
     DataTasks.hydrus_to_modflow,
-    SimulationTasks.modflow_simulation
+    SimulationTasks.modflow_simulation,
+    ConfigurationTasks.output_extraction_to_json,
+    ConfigurationTasks.cleanup
 ]
 
 __FEEDBACK_WARMUP_STEADY_STATE_TASKS = [
     ConfigurationTasks.initialization,
     DataTasks.weather_data_to_hydrus,
-    ConfigurationTasks.initialize_new_iteration_files,
     ConfigurationTasks.create_per_zone_hydrus_models,
+    ConfigurationTasks.initialize_new_iteration_files,
     DataTasks.modflow_init_condition_transfer_steady_state,
     SimulationTasks.hydrus_simulation
 ]
@@ -77,8 +79,8 @@ __FEEDBACK_WARMUP_STEADY_STATE_TASKS = [
 __FEEDBACK_WARMUP_TRANSIENT_TASKS = [
     ConfigurationTasks.initialization,
     DataTasks.weather_data_to_hydrus,
-    ConfigurationTasks.initialize_new_iteration_files,
     ConfigurationTasks.create_per_zone_hydrus_models,
+    ConfigurationTasks.initialize_new_iteration_files,
     DataTasks.modflow_init_condition_transfer_transient,
     SimulationTasks.hydrus_simulation
 ]
@@ -86,13 +88,17 @@ __FEEDBACK_WARMUP_TRANSIENT_TASKS = [
 __FEEDBACK_ITERATION_TASKS = [
     ConfigurationTasks.iteration_pre_configuration,
     ConfigurationTasks.initialize_new_iteration_files,
-    SimulationTasks.hydrus_simulation,
     DataTasks.hydrus_to_modflow,
     SimulationTasks.modflow_simulation,
-    DataTasks.modflow_to_hydrus
+    DataTasks.modflow_to_hydrus,
+    SimulationTasks.hydrus_simulation
 ]
 
-__SIMULATION_CONCLUSION_TASKS = [
+__SIMULATION_FINAL_ITERATION_TASKS = [
+    ConfigurationTasks.iteration_pre_configuration,
+    ConfigurationTasks.initialize_new_iteration_files,
+    DataTasks.hydrus_to_modflow,
+    SimulationTasks.modflow_simulation,
     ConfigurationTasks.output_extraction_to_json,
     ConfigurationTasks.cleanup
 ]
@@ -102,5 +108,5 @@ CHAPTER_TO_TASK_MAPPING = {
     SimulationChapter.FEEDBACK_WARMUP_STEADY_STATE: __FEEDBACK_WARMUP_STEADY_STATE_TASKS,
     SimulationChapter.FEEDBACK_WARMUP_TRANSIENT: __FEEDBACK_WARMUP_TRANSIENT_TASKS,
     SimulationChapter.FEEDBACK_ITERATION: __FEEDBACK_ITERATION_TASKS,
-    SimulationChapter.SIMULATION_CONCLUSION: __SIMULATION_CONCLUSION_TASKS
+    SimulationChapter.SIMULATION_FINAL_ITERATION: __SIMULATION_FINAL_ITERATION_TASKS
 }
