@@ -20,7 +20,7 @@ class SimulationTasks:
     def hydrus_simulation(project_metadata: ProjectMetadata) -> None:
         simulations = []
         if project_metadata.simulation_mode == SimulationMode.SIMPLE_COUPLING:
-            hydrus_to_launch = project_metadata.get_used_hydrus_models()
+            hydrus_to_launch = hydrus_utils.get_used_hydrus_models(project_metadata.shapes_to_hydrus)
         else:
             hydrus_to_launch = hydrus_utils.get_compound_hydrus_ids_for_feedback_loop(project_metadata.shapes_to_hydrus)
             hydrus_to_launch = [compound_hydrus_id for _, compound_hydrus_id in hydrus_to_launch]
