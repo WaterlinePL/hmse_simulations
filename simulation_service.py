@@ -4,6 +4,7 @@ from threading import Thread
 from typing import List
 
 from .hmse_projects import project_service
+from .hmse_projects.project_dao import project_dao
 from .hmse_projects.project_metadata import ProjectMetadata
 from .hmse_projects.typing_help import ProjectID
 from .simulation import simulation_configurator
@@ -19,6 +20,9 @@ class SimulationService(ABC):
     def run_simulation(self, project_metadata: ProjectMetadata) -> None:
         simulation = simulation_configurator.configure_simulation(project_metadata)
         self.register_simulation_if_necessary(simulation)
+
+        project_metadata.finished = False
+        project_dao.save_or_update_metadata(project_metadata)
 
         # Run simulation in background
         thread = Thread(target=simulation.run_simulation)
