@@ -4,11 +4,12 @@ import uuid
 
 from docker.errors import APIError
 
-from hmse_simulations.hmse_projects import project_dao
-from hmse_simulations.hmse_projects.hmse_hydrological_models.modflow import modflow_utils
-from hmse_simulations.hmse_projects.typing_help import ModflowID, ProjectID
-from hmse_simulations.path_formatter import format_path_to_docker
-from hmse_simulations.simulation.deployment.abstract_docker_deployer import AbstractDockerDeployer
+from ...hmse_projects.hmse_hydrological_models.local_fs_configuration import local_paths, path_constants
+from ...hmse_projects.hmse_hydrological_models.modflow import modflow_utils
+from ...hmse_projects.hmse_hydrological_models.typing_help import ModflowID
+from ...hmse_projects.typing_help import ProjectID
+from ...path_formatter import format_path_to_docker
+from .abstract_docker_deployer import AbstractDockerDeployer
 
 
 class ModflowDockerDeployer(AbstractDockerDeployer):
@@ -23,7 +24,8 @@ class ModflowDockerDeployer(AbstractDockerDeployer):
 
     def run_simulation_image(self):
         workspace_dir = format_path_to_docker(self.workspace_volume)
-        path_in_ws = os.path.join(self.project_id, 'simulation', 'modflow', self.modflow_id)
+        local_model_sim_path = local_paths.get_modflow_model_path(self.project_id, self.modflow_id, simulation_mode=True)
+        path_in_ws = local_model_sim_path.replace(f"{path_constants.WORKSPACE_PATH}/", '')
         container_data = None
 
         try:
@@ -40,7 +42,7 @@ class ModflowDockerDeployer(AbstractDockerDeployer):
                 'mode': 'rw'
             }})
 
-            nam_file = modflow_utils.scan_for_modflow_file(os.path.join(project_dao.WORKSPACE_PATH, path_in_ws))
+            nam_file = modflow_utils.scan_for_modflow_file(local_model_sim_path)
             container_data = self.docker_client.create_container(image=self.get_docker_image_name(),
                                                                  host_config=host_config,
                                                                  name=self.get_container_name(),

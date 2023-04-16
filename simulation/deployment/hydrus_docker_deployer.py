@@ -4,9 +4,11 @@ import uuid
 
 from docker.errors import APIError
 
-from hmse_simulations.hmse_projects.typing_help import ProjectID, HydrusID
-from hmse_simulations.path_formatter import format_path_to_docker
-from hmse_simulations.simulation.deployment.abstract_docker_deployer import AbstractDockerDeployer
+from ...hmse_projects.hmse_hydrological_models.local_fs_configuration import local_paths, path_constants
+from ...hmse_projects.hmse_hydrological_models.typing_help import HydrusID
+from ...hmse_projects.typing_help import ProjectID
+from ...path_formatter import format_path_to_docker
+from ...simulation.deployment.abstract_docker_deployer import AbstractDockerDeployer
 
 
 class HydrusDockerDeployer(AbstractDockerDeployer):
@@ -21,7 +23,8 @@ class HydrusDockerDeployer(AbstractDockerDeployer):
 
     def run_simulation_image(self):
         workspace_dir = format_path_to_docker(self.workspace_volume)
-        path_in_ws = os.path.join(self.project_id, 'simulation', 'hydrus', self.hydrus_id)
+        local_model_sim_path = local_paths.get_modflow_model_path(self.project_id, self.hydrus_id, simulation_mode=True)
+        path_in_ws = local_model_sim_path.replace(f"{path_constants.WORKSPACE_PATH}/", '')
         container_data = None
 
         try:

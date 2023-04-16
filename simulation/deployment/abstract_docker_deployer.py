@@ -21,8 +21,8 @@ class AbstractDockerDeployer(ABC):
                                                  tag=self.get_image_tag()))
 
         self.workspace_volume = AbstractDockerDeployer._get_workspace_mount(
-            self.docker_client.inspect_container(
-                os.environ["HOSTNAME"])['Mounts'])
+            self.docker_client.inspect_container(os.environ["HOSTNAME"])['Mounts']
+        )
 
         self.container_name = None
         self.container_name = self.get_container_name()
