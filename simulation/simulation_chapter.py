@@ -99,6 +99,7 @@ __SIMULATION_FINAL_ITERATION_TASKS = [
     ConfigurationTasks.initialize_new_iteration_files,
     DataTasks.hydrus_to_modflow,
     SimulationTasks.modflow_simulation,
+    ConfigurationTasks.iteration_pre_configuration,
     ConfigurationTasks.output_extraction_to_json,
     ConfigurationTasks.cleanup
 ]
