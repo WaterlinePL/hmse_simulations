@@ -9,7 +9,6 @@ from ..hmse_projects.project_metadata import ProjectMetadata
 
 
 class Simulation:
-    MAX_CONCURRENT_MODELS: ClassVar[int] = 4
 
     project_metadata: ProjectMetadata
     simulation_status: List[ChapterStatus]

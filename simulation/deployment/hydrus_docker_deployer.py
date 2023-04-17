@@ -23,7 +23,7 @@ class HydrusDockerDeployer(AbstractDockerDeployer):
 
     def run_simulation_image(self):
         workspace_dir = format_path_to_docker(self.workspace_volume)
-        local_model_sim_path = local_paths.get_modflow_model_path(self.project_id, self.hydrus_id, simulation_mode=True)
+        local_model_sim_path = local_paths.get_hydrus_model_path(self.project_id, self.hydrus_id, simulation_mode=True)
         path_in_ws = local_model_sim_path.replace(f"{path_constants.WORKSPACE_PATH}/", '')
         container_data = None
 
