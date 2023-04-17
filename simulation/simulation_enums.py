@@ -47,7 +47,7 @@ class SimulationStageName(StrEnum):
             SimulationStageName.INITIALIZE_NEW_ITERATION_FILES: "Initializing files for new iteration",
             SimulationStageName.CREATE_PER_ZONE_HYDRUS_MODELS: "Creating per zone Hydrus models",
             SimulationStageName.MODFLOW_TO_HYDRUS_DATA_PASSING: "Passing data from Modflow to Hydrus",
-            SimulationStageName.ITERATION_PRE_CONFIGURATION: "Preconfiguring iteration",
+            SimulationStageName.ITERATION_PRE_CONFIGURATION: "Copying iteration files to new directory",
 
             SimulationStageName.MODFLOW_INIT_CONDITION_TRANSFER_STEADY_STATE: "Modflow warmup (steady state simulation)"
                                                                               " and zones depth transfer to Hydrus",
