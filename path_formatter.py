@@ -1,7 +1,7 @@
 import re
+import sys
 
 DOCKER_CONST_PATH = "/run/desktop/mnt/host"
-
 
 
 def format_path_to_docker(dir_path: str) -> str:
@@ -10,6 +10,8 @@ def format_path_to_docker(dir_path: str) -> str:
     @param dir_path: Path to modflow/hydrus project directory
     @return: Formatted path -> str
     """
+    if sys.platform == "linux" or sys.platform == "linux2":
+        return dir_path
     path_split = re.split("\\\\|:\\\\", dir_path)
     path_split[0] = path_split[0].lower()
     return DOCKER_CONST_PATH + '/' + '/'.join(path_split)
