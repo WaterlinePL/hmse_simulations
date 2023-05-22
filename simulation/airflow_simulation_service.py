@@ -1,3 +1,4 @@
+import logging
 import os
 
 import requests
@@ -17,6 +18,7 @@ AIRFLOW_SIMULATION_DAG = os.environ["AIRFLOW_SIMULATION_DAG"]
 class AirflowSimulationService:
     def __init__(self):
         self.auth = HTTPBasicAuth(AIRFLOW_USER, AIRFLOW_PASSWORD)
+        self.__init_activate_dags()
 
     def start_simulation(self, run_id: str, project_metadata: ProjectMetadata):
         req_content = {
@@ -47,6 +49,24 @@ class AirflowSimulationService:
             return SimulationStageStatus.PENDING
         return SimulationStageStatus.SUCCESS
 
+    def __init_activate_dags(self):
+        dag_pattern = "hmse_"
+        req_content = {
+            "is_paused": False
+        }
+        resp = requests.patch(AirflowSimulationService.__get_endpoint_for_dags_state_update(),
+                              params={
+                                  "dag_id_pattern": dag_pattern,
+                              },
+                              json=req_content,
+                              auth=self.auth)
+
+        if resp.status_code != 200:
+            raise RuntimeError("DAG initialization failed!")
+
+        initialized_dags = [dag["dag_id"] for dag in resp.json()["dags"]]
+        logging.info(f"Successfully initialized DAGs: {initialized_dags}")
+
     @staticmethod
     def __get_endpoint_for_task(run_id: str, task_id: str) -> str:
         return (f"http://{AIRFLOW_API_ENDPOINT}/dags/{AIRFLOW_SIMULATION_DAG}/dagRuns/{run_id}/"
@@ -65,6 +85,10 @@ class AirflowSimulationService:
     @staticmethod
     def __get_endpoint_for_simulation_start():
         return f"http://{AIRFLOW_API_ENDPOINT}/dags/{AIRFLOW_SIMULATION_DAG}/dagRuns"
+
+    @staticmethod
+    def __get_endpoint_for_dags_state_update():
+        return f"http://{AIRFLOW_API_ENDPOINT}/dags"
 
     @staticmethod
     def __prepare_config_json(metadata: ProjectMetadata):
