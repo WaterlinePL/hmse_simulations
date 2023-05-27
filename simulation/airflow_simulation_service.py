@@ -18,9 +18,9 @@ AIRFLOW_SIMULATION_DAG = os.environ["AIRFLOW_SIMULATION_DAG"]
 class AirflowSimulationService:
     def __init__(self):
         self.auth = HTTPBasicAuth(AIRFLOW_USER, AIRFLOW_PASSWORD)
-        self.__init_activate_dags()
 
     def start_simulation(self, run_id: str, project_metadata: ProjectMetadata):
+        self.__init_activate_dags()
         req_content = {
             "conf": AirflowSimulationService.__prepare_config_json(project_metadata),
             "dag_run_id": run_id
@@ -62,7 +62,7 @@ class AirflowSimulationService:
                               auth=self.auth)
 
         if resp.status_code != 200:
-            raise RuntimeError("DAG initialization failed!")
+            raise SimulationError(description="Failed to connect to Airflow scheduler!")
 
         initialized_dags = [dag["dag_id"] for dag in resp.json()["dags"]]
         logging.info(f"Successfully initialized DAGs: {initialized_dags}")
