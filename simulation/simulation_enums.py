@@ -18,6 +18,7 @@ class SimulationStageName(StrEnum):
     INITIALIZATION = auto()
     WEATHER_DATA_TRANSFER = auto()
     HYDRUS_SIMULATION = auto()
+    HYDRUS_SIMULATION_WARMUP = auto()
     HYDRUS_TO_MODFLOW_DATA_PASSING = auto()
     MODFLOW_SIMULATION = auto()
     OUTPUT_UPLOAD = auto()
@@ -31,6 +32,7 @@ class SimulationStageName(StrEnum):
     MODFLOW_INIT_CONDITION_TRANSFER_TRANSIENT = auto()
 
     ITERATION_PRE_CONFIGURATION = auto()
+    FEEDBACK_SAVE_OUTPUT_ITERATION = auto()
 
     def get_as_id(self) -> str:
         return self.lower().replace('_', ' ').title().replace(' ', '')
@@ -40,6 +42,7 @@ class SimulationStageName(StrEnum):
             SimulationStageName.INITIALIZATION: "Simulation initialization",
             SimulationStageName.WEATHER_DATA_TRANSFER: "Applying weather data to Hydrus models",
             SimulationStageName.HYDRUS_SIMULATION: "Hydrus simulations",
+            SimulationStageName.HYDRUS_SIMULATION_WARMUP: "Hydrus simulations warmup",
             SimulationStageName.HYDRUS_TO_MODFLOW_DATA_PASSING: "Passing data from Hydrus to Modflow",
             SimulationStageName.MODFLOW_SIMULATION: "Modflow simulation",
             SimulationStageName.OUTPUT_EXTRACTION_TO_JSON: "Exporting output to JSON",
@@ -48,10 +51,9 @@ class SimulationStageName(StrEnum):
             SimulationStageName.CREATE_PER_ZONE_HYDRUS_MODELS: "Creating per zone Hydrus models",
             SimulationStageName.MODFLOW_TO_HYDRUS_DATA_PASSING: "Passing data from Modflow to Hydrus",
             SimulationStageName.ITERATION_PRE_CONFIGURATION: "Copying iteration files to new directory",
-
+            SimulationStageName.FEEDBACK_SAVE_OUTPUT_ITERATION: "Saving last iteration files",
             SimulationStageName.MODFLOW_INIT_CONDITION_TRANSFER_STEADY_STATE: "Modflow warmup (steady state simulation)"
                                                                               " and zones depth transfer to Hydrus",
-
             SimulationStageName.MODFLOW_INIT_CONDITION_TRANSFER_TRANSIENT: "Modflow zones depth transfer to Hydrus "
                                                                            "(BAS file)",
         }[self]

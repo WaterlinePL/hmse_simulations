@@ -15,6 +15,11 @@ class SimulationTasks(ABC):
 
     @staticmethod
     @abstractmethod
+    @hmse_task(stage_name=SimulationStageName.HYDRUS_SIMULATION_WARMUP)
+    def hydrus_simulation_warmup(project_metadata: ProjectMetadata) -> None:
+        ...
+
+    @staticmethod
     @hmse_task(stage_name=SimulationStageName.MODFLOW_SIMULATION)
     def modflow_simulation(project_metadata: ProjectMetadata) -> None:
         ...
