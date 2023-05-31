@@ -47,3 +47,8 @@ class ConfigurationTasks:
     @hmse_task(stage_name=SimulationStageName.ITERATION_PRE_CONFIGURATION)
     def iteration_pre_configuration(project_metadata: ProjectMetadata) -> None:
         configuration_tasks_logic.pre_configure_iteration(project_metadata.project_id)
+
+    @staticmethod
+    @hmse_task(stage_name=SimulationStageName.FEEDBACK_SAVE_OUTPUT_ITERATION)
+    def save_last_iteration(project_metadata: ProjectMetadata) -> None:
+        ConfigurationTasks.iteration_pre_configuration(project_metadata)

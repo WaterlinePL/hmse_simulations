@@ -17,7 +17,7 @@ class SimulationChapter(StrEnum):
     FEEDBACK_WARMUP_STEADY_STATE = auto()
     FEEDBACK_WARMUP_TRANSIENT = auto()
     FEEDBACK_ITERATION = auto()
-    SIMULATION_FINAL_ITERATION = auto()
+    FEEDBACK_SIMULATION_FINALIZATION = auto()
 
     def get_simulation_tasks(self, metadata: ProjectMetadata) -> List[Callable[[ProjectMetadata], None]]:
         tasks = copy.deepcopy(CHAPTER_TO_TASK_MAPPING[self])
@@ -73,7 +73,7 @@ __FEEDBACK_WARMUP_STEADY_STATE_TASKS = [
     ConfigurationTasks.create_per_zone_hydrus_models,
     ConfigurationTasks.initialize_new_iteration_files,
     DataTasks.modflow_init_condition_transfer_steady_state,
-    SimulationTasks.hydrus_simulation
+    SimulationTasks.hydrus_simulation_warmup
 ]
 
 __FEEDBACK_WARMUP_TRANSIENT_TASKS = [
@@ -88,17 +88,13 @@ __FEEDBACK_WARMUP_TRANSIENT_TASKS = [
 __FEEDBACK_ITERATION_TASKS = [
     ConfigurationTasks.iteration_pre_configuration,
     ConfigurationTasks.initialize_new_iteration_files,
-    DataTasks.hydrus_to_modflow,
-    SimulationTasks.modflow_simulation,
     DataTasks.modflow_to_hydrus,
-    SimulationTasks.hydrus_simulation
+    SimulationTasks.hydrus_simulation,
+    DataTasks.hydrus_to_modflow,
+    SimulationTasks.modflow_simulation
 ]
 
-__SIMULATION_FINAL_ITERATION_TASKS = [
-    ConfigurationTasks.iteration_pre_configuration,
-    ConfigurationTasks.initialize_new_iteration_files,
-    DataTasks.hydrus_to_modflow,
-    SimulationTasks.modflow_simulation,
+__FEEDBACK_SIMULATION_FINALIZATION = [
     ConfigurationTasks.iteration_pre_configuration,
     ConfigurationTasks.output_extraction_to_json,
     ConfigurationTasks.cleanup
@@ -109,5 +105,5 @@ CHAPTER_TO_TASK_MAPPING = {
     SimulationChapter.FEEDBACK_WARMUP_STEADY_STATE: __FEEDBACK_WARMUP_STEADY_STATE_TASKS,
     SimulationChapter.FEEDBACK_WARMUP_TRANSIENT: __FEEDBACK_WARMUP_TRANSIENT_TASKS,
     SimulationChapter.FEEDBACK_ITERATION: __FEEDBACK_ITERATION_TASKS,
-    SimulationChapter.SIMULATION_FINAL_ITERATION: __SIMULATION_FINAL_ITERATION_TASKS
+    SimulationChapter.FEEDBACK_SIMULATION_FINALIZATION: __FEEDBACK_SIMULATION_FINALIZATION
 }

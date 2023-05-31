@@ -38,6 +38,11 @@ class SimulationTasks:
             proc.communicate(input="\n")  # Press enter to close program (blocking)
 
     @staticmethod
+    @hmse_task(stage_name=SimulationStageName.HYDRUS_SIMULATION_WARMUP)
+    def hydrus_simulation_warmup(project_metadata: ProjectMetadata) -> None:
+        SimulationTasks.hydrus_simulation(project_metadata)
+
+    @staticmethod
     @hmse_task(stage_name=SimulationStageName.MODFLOW_SIMULATION)
     def modflow_simulation(project_metadata: ProjectMetadata) -> None:
         modflow_id = project_metadata.modflow_metadata.modflow_id
