@@ -2,7 +2,7 @@ from typing import List
 
 from .simulation import Simulation
 from .simulation_chapter import SimulationChapter
-from ..hmse_projects.hmse_hydrological_models.modflow.modflow_step import ModflowStepType
+from ..hmse_projects.hmse_hydrological_models.processing.modflow.modflow_step import ModflowStepType
 from ..hmse_projects.project_metadata import ProjectMetadata
 from ..hmse_projects.simulation_mode import SimulationMode
 
