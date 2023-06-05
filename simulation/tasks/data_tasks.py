@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 
 from ..simulation_enums import SimulationStageName
+from ..simulation_error import SimulationError
+from ...hmse_projects.hmse_hydrological_models.processing.data_passing_utils import DataProcessingException
 from ...hmse_projects.project_metadata import ProjectMetadata
 from .hmse_task import hmse_task
 
