@@ -16,8 +16,6 @@ class Simulation(ABC):
         self.chapter_statuses = [ChapterStatus(chapter, project_metadata) for chapter in sim_chapters]
         self.simulation_error = None
 
-    ## TODO: steadystate should not be Hydrused??????
-
     def run_simulation(self):
         for chapter in self.chapter_statuses:
             self.__run_chapter(chapter)
