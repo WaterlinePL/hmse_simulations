@@ -1,6 +1,6 @@
 from .hmse_task import hmse_task
 from ..simulation_enums import SimulationStageName
-from ...hmse_projects.hmse_hydrological_models.task_logic import configuration_tasks_logic
+from ...hmse_projects.hmse_hydrological_models.processing.task_logic import configuration_tasks_logic
 from ...hmse_projects.project_metadata import ProjectMetadata
 
 
