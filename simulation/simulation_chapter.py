@@ -82,7 +82,7 @@ __FEEDBACK_WARMUP_TRANSIENT_TASKS = [
     ConfigurationTasks.create_per_zone_hydrus_models,
     ConfigurationTasks.initialize_new_iteration_files,
     DataTasks.modflow_init_condition_transfer_transient,
-    SimulationTasks.hydrus_simulation
+    SimulationTasks.hydrus_simulation_warmup
 ]
 
 __FEEDBACK_ITERATION_TASKS = [
