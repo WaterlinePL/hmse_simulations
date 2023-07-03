@@ -25,6 +25,7 @@ class SimulationStageName(StrEnum):
     CLEANUP = auto()
 
     INITIALIZE_NEW_ITERATION_FILES = auto()
+    SAVE_REFERENCE_HYDRUS_MODELS = auto()
     CREATE_PER_ZONE_HYDRUS_MODELS = auto()
 
     MODFLOW_TO_HYDRUS_DATA_PASSING = auto()
@@ -52,6 +53,7 @@ class SimulationStageName(StrEnum):
             SimulationStageName.MODFLOW_TO_HYDRUS_DATA_PASSING: "Passing data from Modflow to Hydrus",
             SimulationStageName.ITERATION_PRE_CONFIGURATION: "Copying iteration files to new directory",
             SimulationStageName.FEEDBACK_SAVE_OUTPUT_ITERATION: "Saving last iteration files",
+            SimulationStageName.SAVE_REFERENCE_HYDRUS_MODELS: "Creating Hydrus reference models",
             SimulationStageName.MODFLOW_INIT_CONDITION_TRANSFER_STEADY_STATE: "Modflow warmup (steady state simulation)"
                                                                               " and zones depth transfer to Hydrus",
             SimulationStageName.MODFLOW_INIT_CONDITION_TRANSFER_TRANSIENT: "Modflow zones depth transfer to Hydrus "

@@ -15,6 +15,12 @@ class ConfigurationTasks(ABC):
 
     @staticmethod
     @abstractmethod
+    @hmse_task(stage_name=SimulationStageName.SAVE_REFERENCE_HYDRUS_MODELS)
+    def save_reference_hydrus_models(project_metadata: ProjectMetadata) -> None:
+        ...
+
+    @staticmethod
+    @abstractmethod
     @hmse_task(stage_name=SimulationStageName.OUTPUT_UPLOAD)
     def output_extraction_to_json(project_metadata: ProjectMetadata) -> None:
         ...

@@ -70,6 +70,7 @@ __SIMPLE_COUPLING_TASKS = [
 __FEEDBACK_WARMUP_STEADY_STATE_TASKS = [
     ConfigurationTasks.initialization,
     DataTasks.weather_data_to_hydrus,
+    ConfigurationTasks.save_reference_hydrus_models,
     ConfigurationTasks.create_per_zone_hydrus_models,
     ConfigurationTasks.initialize_new_iteration_files,
     DataTasks.modflow_init_condition_transfer_steady_state,
@@ -79,6 +80,7 @@ __FEEDBACK_WARMUP_STEADY_STATE_TASKS = [
 __FEEDBACK_WARMUP_TRANSIENT_TASKS = [
     ConfigurationTasks.initialization,
     DataTasks.weather_data_to_hydrus,
+    ConfigurationTasks.save_reference_hydrus_models,
     ConfigurationTasks.create_per_zone_hydrus_models,
     ConfigurationTasks.initialize_new_iteration_files,
     DataTasks.modflow_init_condition_transfer_transient,
