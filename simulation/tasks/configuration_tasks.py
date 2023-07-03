@@ -12,6 +12,11 @@ class ConfigurationTasks:
         configuration_tasks_logic.local_files_initialization(project_metadata.project_id)
 
     @staticmethod
+    @hmse_task(stage_name=SimulationStageName.SAVE_REFERENCE_HYDRUS_MODELS)
+    def save_reference_hydrus_models(project_metadata: ProjectMetadata) -> None:
+        configuration_tasks_logic.preserve_reference_hydrus_models(project_metadata.project_id)
+
+    @staticmethod
     @hmse_task(stage_name=SimulationStageName.OUTPUT_EXTRACTION_TO_JSON)
     def output_extraction_to_json(project_metadata: ProjectMetadata) -> None:
         configuration_tasks_logic.extract_output_to_json(
