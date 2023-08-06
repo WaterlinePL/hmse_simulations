@@ -1,18 +1,15 @@
 import datetime
 from dataclasses import dataclass
-from time import sleep
-from typing import List, Callable, Tuple, Optional
+from typing import List
 
 import pytz
 
-from ..hmse_projects.project_dao import project_dao
-from ..hmse_projects.typing_help import ProjectID
-from .airflow_simulation_service import airflow_service
 from .simulation_chapter import SimulationChapter
-from ..hmse_projects.project_metadata import ProjectMetadata
-from .simulation_enums import SimulationStageStatus, SimulationStageName
+from .simulation_enums import SimulationStageStatus
 from .simulation_error import SimulationError
 from .simulation_status import ChapterStatus
+from ..hmse_projects.project_metadata import ProjectMetadata
+from ..hmse_projects.typing_help import ProjectID
 
 MODFLOW_OUTPUT_JSON = "results.json"
 
@@ -20,20 +17,10 @@ MODFLOW_OUTPUT_JSON = "results.json"
 @dataclass
 class Simulation:
     project_metadata: ProjectMetadata
-    dag_run_id: Optional[str] = None
-
-    def __post_init__(self):
-        self.dag_run_id = Simulation.generate_unique_run_id(self.project_metadata.project_id)
 
     def __init__(self, project_metadata: ProjectMetadata, sim_chapters: List[SimulationChapter]):
         self.project_metadata = project_metadata
         self.chapter_statuses = [ChapterStatus(chapter, project_metadata) for chapter in sim_chapters]
-
-    # OLD
-    # def run_simulation(self) -> None:
-    #     airflow_service.start_simulation(self.dag_run_id, self.project_metadata)
-    #     for stage, stage_monitor_method in self.__get_stage_methods_to_monitor():
-    #         self.simulation_status.set_stage_status(stage, SimulationStageStatus.RUNNING)
 
     def run_simulation(self):
         for chapter in self.chapter_statuses:
@@ -44,14 +31,28 @@ class Simulation:
 
     def __run_chapter(self, chapter_status: ChapterStatus) -> None:
         chapter_tasks = chapter_status.chapter.get_simulation_tasks(self.project_metadata)
+        dag_run_id = Simulation.generate_unique_run_id(chapter_name=chapter_status.chapter.get_name_snake_case(),
+                                                       project_id=self.project_metadata.project_id)
         for i, workflow_task in enumerate(chapter_tasks):
             chapter_status.set_stage_status(SimulationStageStatus.RUNNING, stage_idx=i)
 
             # Launch and monitor stage
             try:
-                workflow_task(self.project_metadata)
+                workflow_task(self.project_metadata, dag_run_id=dag_run_id)     # TODO: fix typing
             except SimulationError as error:
                 chapter_status.set_stage_status(SimulationStageStatus.ERROR, stage_idx=i)
                 raise SimulationError(description=error.description)
 
             chapter_status.set_stage_status(SimulationStageStatus.SUCCESS, stage_idx=i)
+
+    @staticmethod
+    def handle_stage_status(stage_status: SimulationStageStatus) -> bool:
+        if stage_status == SimulationStageStatus.ERROR:
+            raise SimulationError(f"Step {stage_status} has failed!")
+        if stage_status == SimulationStageStatus.SUCCESS:
+            return True
+        return False
+
+    @staticmethod
+    def generate_unique_run_id(chapter_name: str, project_id: ProjectID):
+        return f"{project_id}-{chapter_name}-{datetime.datetime.now(pytz.timezone('Europe/Warsaw'))}"

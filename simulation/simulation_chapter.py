@@ -30,6 +30,9 @@ class SimulationChapter(StrEnum):
     def get_as_id(self) -> str:
         return self.get_name().replace(' ', '')
 
+    def get_name_snake_case(self):
+        return self.lower()
+
     @staticmethod
     def __get_steps_to_skip(tasks: List[Callable[[ProjectMetadata], None]],
                             metadata: ProjectMetadata) -> Set[Callable[[ProjectMetadata], None]]:

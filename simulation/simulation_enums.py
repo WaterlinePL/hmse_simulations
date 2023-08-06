@@ -46,7 +46,7 @@ class SimulationStageName(StrEnum):
             SimulationStageName.HYDRUS_SIMULATION_WARMUP: "Hydrus simulations warmup",
             SimulationStageName.HYDRUS_TO_MODFLOW_DATA_PASSING: "Passing data from Hydrus to Modflow",
             SimulationStageName.MODFLOW_SIMULATION: "Modflow simulation",
-            SimulationStageName.OUTPUT_EXTRACTION_TO_JSON: "Exporting output to JSON",
+            SimulationStageName.OUTPUT_UPLOAD: "Uploading simulation results",
             SimulationStageName.CLEANUP: "Cleaning up after simulation",
             SimulationStageName.INITIALIZE_NEW_ITERATION_FILES: "Initializing files for new iteration",
             SimulationStageName.CREATE_PER_ZONE_HYDRUS_MODELS: "Creating per zone Hydrus models",

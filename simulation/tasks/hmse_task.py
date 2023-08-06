@@ -15,6 +15,7 @@ def hmse_task(stage_name: SimulationStageName):
             total_args = list(args) + list(kwargs.values())
             if not any(map(lambda arg: isinstance(arg, ProjectMetadata), total_args)):
                 raise RuntimeError("HMSE task requires ProjectMetadata as an argument")
+            kwargs["stage_name"] = stage_name
             return func(*args, **kwargs)
 
         __TASK_TO_NAME_MAPPING[func.__name__] = stage_name

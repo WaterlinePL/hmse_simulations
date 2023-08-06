@@ -1,13 +1,17 @@
 import logging
 import os
+from time import sleep
+from typing import Callable
 
 import requests
 from requests.auth import HTTPBasicAuth
 
-from hmse_simulations.hmse_projects.project_dao import project_dao
-from hmse_simulations.hmse_projects.project_metadata import ProjectMetadata
-from hmse_simulations.simulation.simulation_enums import SimulationStageStatus
-from hmse_simulations.simulation.simulation_error import SimulationError
+from ...hmse_projects.project_dao import project_dao
+from ...hmse_projects.project_metadata import ProjectMetadata
+from ..airflow.airflow_name_converter import convert_hmse_task_to_airflow_task_name
+from ..simulation import Simulation
+from ..simulation_enums import SimulationStageStatus, SimulationStageName
+from ..simulation_error import SimulationError
 
 AIRFLOW_API_ENDPOINT = os.environ["AIRFLOW_API_ENDPOINT"]
 AIRFLOW_USER = os.environ["AIRFLOW_USER"]
@@ -91,6 +95,7 @@ class AirflowSimulationService:
         return f"http://{AIRFLOW_API_ENDPOINT}/dags"
 
     @staticmethod
+    # TODO
     def __prepare_config_json(metadata: ProjectMetadata):
         use_weather = any(h for h in metadata.get_used_hydrus_models()
                           if h in metadata.hydrus_to_weather.keys())
@@ -103,6 +108,27 @@ class AirflowSimulationService:
                 "use_weather_files": use_weather
             }
         }
+
+    def monitor_job(self, dag_run_id: str, stage_name: SimulationStageName):
+        task_id = convert_hmse_task_to_airflow_task_name(stage_name)
+        AirflowSimulationService.__monitor_airflow_task(dag_run_id, task_id,
+                                                        status_getter_function=self.get_simulation_stage_status)
+
+    def monitor_mapped_job(self, dag_run_id: str, stage_name: SimulationStageName):
+        task_id = convert_hmse_task_to_airflow_task_name(stage_name)
+        AirflowSimulationService.__monitor_airflow_task(dag_run_id, task_id,
+                                                        status_getter_function=self.get_mapped_stage_status)
+
+    @staticmethod
+    def __monitor_airflow_task(dag_run_id: str, task_id: str, status_getter_function: Callable):
+        done = False
+        while not done:
+            status = status_getter_function(
+                run_id=dag_run_id,
+                task_id=task_id
+            )
+            done = Simulation.handle_stage_status(status)
+            sleep(2)
 
 
 airflow_service = AirflowSimulationService()
