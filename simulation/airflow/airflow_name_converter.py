@@ -1,14 +1,13 @@
-from ..simulation_chapter import SimulationChapter
 from ..simulation_enums import SimulationStageName
 
 
-def convert_chapter_to_dag_name(chapter_name: SimulationChapter) -> str:
+def convert_chapter_to_dag_name(chapter_name: str) -> str:
     return {
-        SimulationChapter.SIMPLE_COUPLING: "hmse_simple_coupling",
-        SimulationChapter.FEEDBACK_WARMUP_STEADY_STATE: "hmse_feedback_warmup_steady_state",
-        SimulationChapter.FEEDBACK_WARMUP_TRANSIENT: "hmse_feedback_warmup_steady_state",
-        SimulationChapter.FEEDBACK_ITERATION: "hmse_feedback_iteration",
-        SimulationChapter.FEEDBACK_SIMULATION_FINALIZATION: "hmse_feedback_finalization"
+        "SIMPLE_COUPLING": "hmse_simple_coupling",
+        "FEEDBACK_WARMUP_STEADY_STATE": "hmse_feedback_warmup_steady_state",
+        "FEEDBACK_WARMUP_TRANSIENT": "hmse_feedback_warmup_steady_state",
+        "FEEDBACK_ITERATION": "hmse_feedback_iteration",
+        "FEEDBACK_SIMULATION_FINALIZATION": "hmse_feedback_finalization"
     }[chapter_name]
 
 

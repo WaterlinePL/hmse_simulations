@@ -4,6 +4,7 @@ from typing import List
 
 import pytz
 
+from .airflow.airflow_simulation_service import airflow_service
 from .simulation_chapter import SimulationChapter
 from .simulation_enums import SimulationStageStatus
 from .simulation_error import SimulationError
@@ -23,6 +24,7 @@ class Simulation:
         self.chapter_statuses = [ChapterStatus(chapter, project_metadata) for chapter in sim_chapters]
 
     def run_simulation(self):
+        airflow_service.init_activate_dags()
         for chapter in self.chapter_statuses:
             self.__run_chapter(chapter)
 
@@ -33,25 +35,24 @@ class Simulation:
         chapter_tasks = chapter_status.chapter.get_simulation_tasks(self.project_metadata)
         dag_run_id = Simulation.generate_unique_run_id(chapter_name=chapter_status.chapter.get_name_snake_case(),
                                                        project_id=self.project_metadata.project_id)
+        airflow_service.start_chapter(run_id=dag_run_id,
+                                      chapter_name=chapter_status.chapter,
+                                      project_metadata=self.project_metadata)
+
         for i, workflow_task in enumerate(chapter_tasks):
             chapter_status.set_stage_status(SimulationStageStatus.RUNNING, stage_idx=i)
 
             # Launch and monitor stage
             try:
-                workflow_task(self.project_metadata, dag_run_id=dag_run_id)     # TODO: fix typing
+                workflow_task(self.project_metadata,
+                              dag_run_id=dag_run_id,
+                              chapter_name=chapter_status.chapter,
+                              stage_name=chapter_status.get_stages_names()[i])
             except SimulationError as error:
                 chapter_status.set_stage_status(SimulationStageStatus.ERROR, stage_idx=i)
                 raise SimulationError(description=error.description)
 
             chapter_status.set_stage_status(SimulationStageStatus.SUCCESS, stage_idx=i)
-
-    @staticmethod
-    def handle_stage_status(stage_status: SimulationStageStatus) -> bool:
-        if stage_status == SimulationStageStatus.ERROR:
-            raise SimulationError(f"Step {stage_status} has failed!")
-        if stage_status == SimulationStageStatus.SUCCESS:
-            return True
-        return False
 
     @staticmethod
     def generate_unique_run_id(chapter_name: str, project_id: ProjectID):
