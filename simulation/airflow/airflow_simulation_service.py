@@ -29,6 +29,7 @@ class AirflowSimulationService:
                                     task_id: str) -> SimulationStageStatus:
 
         resp = requests.get(self.__get_endpoint_for_task(run_id, chapter_name, task_id), auth=self.auth)
+        resp.raise_for_status()
         status = resp.json()["state"]
         return AirflowSimulationService.__analyze_single_status(status)
 
