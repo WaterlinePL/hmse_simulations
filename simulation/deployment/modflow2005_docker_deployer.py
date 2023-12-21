@@ -4,9 +4,9 @@ import uuid
 
 from docker.errors import APIError
 
-from ...hmse_projects.hmse_hydrological_models.local_fs_configuration import local_paths, path_constants
-from ...hmse_projects.hmse_hydrological_models.modflow import modflow_utils
-from ...hmse_projects.hmse_hydrological_models.typing_help import ModflowID
+from ...hmse_projects.hmse_hydrological_models.processing.local_fs_configuration import local_paths, path_constants
+from ...hmse_projects.hmse_hydrological_models.processing.modflow import modflow_utils
+from ...hmse_projects.hmse_hydrological_models.processing.typing_help import ModflowID
 from ...hmse_projects.typing_help import ProjectID
 from ...path_formatter import format_path_to_docker
 from .abstract_docker_deployer import AbstractDockerDeployer

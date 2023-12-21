@@ -4,8 +4,8 @@ import uuid
 
 from docker.errors import APIError
 
-from ...hmse_projects.hmse_hydrological_models.local_fs_configuration import local_paths, path_constants
-from ...hmse_projects.hmse_hydrological_models.typing_help import HydrusID
+from ...hmse_projects.hmse_hydrological_models.processing.local_fs_configuration import local_paths, path_constants
+from ...hmse_projects.hmse_hydrological_models.processing.typing_help import HydrusID
 from ...hmse_projects.typing_help import ProjectID
 from ...path_formatter import format_path_to_docker
 from ...simulation.deployment.abstract_docker_deployer import AbstractDockerDeployer
@@ -41,7 +41,8 @@ class HydrusDockerDeployer(AbstractDockerDeployer):
                 'mode': 'rw'
             }})
 
-            container_data = self.docker_client.create_container(image=self.get_docker_image_name(),
+            full_image_name = f"{self.get_docker_image_name()}:{self.get_image_tag()}"
+            container_data = self.docker_client.create_container(image=full_image_name,
                                                                  host_config=host_config,
                                                                  name=self.get_container_name())
             self.docker_client.start(container_data)
