@@ -16,6 +16,9 @@ class DataTasks:
         try:
             data_tasks_logic.weather_data_transfer_to_hydrus(
                 project_id=project_metadata.project_id,
+                start_date=project_metadata.start_date,
+                spin_up=project_metadata.spin_up,
+                modflow_metadata=project_metadata.modflow_metadata,
                 hydrus_to_weather=project_metadata.hydrus_to_weather,
                 shapes_to_hydrus=project_metadata.shapes_to_hydrus
             )
