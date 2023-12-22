@@ -1,5 +1,5 @@
 import datetime
-import logging
+import sys
 import time
 from dataclasses import dataclass
 from typing import List
@@ -65,8 +65,8 @@ class Simulation:
             if chapter_status.get_stages_statuses()[i].name == SimulationStageName.MODFLOW_SIMULATION:
                 total_chapter_end = time.time()
                 self.time_measurements["TOTAL"] = total_chapter_end - total_chapter_start
-                logging.info(','.join(self.time_measurements.keys()))
-                logging.info(','.join(map(str, self.time_measurements.values())))
+                print(','.join(self.time_measurements.keys()), file=sys.stderr)
+                print(','.join(map(str, self.time_measurements.values())), file=sys.stderr)
 
     @staticmethod
     def generate_unique_run_id(chapter_name: str, project_id: ProjectID):
